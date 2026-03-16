@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useBracketState, BracketContext } from './hooks/useBracketState';
 import { useTeamRatings } from './hooks/useTeamRatings';
 import { useLiveScores } from './hooks/useLiveScores';
@@ -19,7 +19,21 @@ function AppContent() {
   const settingsState = useSettings();
   const [showSettings, setShowSettings] = useState(false);
   const [showBracketFill, setShowBracketFill] = useState(false);
-  const [view, setView] = useState<'bracket' | 'table'>('bracket');
+  const [view, setView] = useState<'bracket' | 'table'>(() =>
+    window.innerWidth < 1024 ? 'table' : 'bracket'
+  );
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 1024);
+
+  // Force table view on small screens
+  useEffect(() => {
+    const handleResize = () => {
+      const small = window.innerWidth < 1024;
+      setIsSmallScreen(small);
+      if (small) setView('table');
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Load Torvik ratings on mount
   const { error: ratingsError } = useTeamRatings({ state, dispatch });
@@ -50,7 +64,7 @@ function AppContent() {
                 onOpenBracketFill={() => setShowBracketFill(true)}
                 aiEnabled={settingsState.settings.aiEnabled}
                 view={view}
-                onSetView={setView}
+                onSetView={isSmallScreen ? undefined : setView}
               />
               {ratingsError && (
                 <div style={{
