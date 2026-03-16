@@ -61,7 +61,8 @@
 
 /* Dim non-highlighted pairs when a path is active */
 .dimmed {
-  opacity: 0.15;
+  opacity: 0.3;
+  transition: opacity 0.15s ease;
 }
 
 /* Probability label at connector junction */

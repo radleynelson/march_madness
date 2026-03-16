@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, createContext, useContext } from 'react';
+import { useState, useCallback, useMemo, useRef, createContext, useContext } from 'react';
 import type { BracketState, Team, TeamProbabilities } from '../types/bracket';
 
 export interface TeamPath {
@@ -107,9 +107,23 @@ export function formatProb(value: number): string {
 
 export function useHoverState(state: BracketState) {
   const [hoveredTeamId, setHoveredTeamIdRaw] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const setHoveredTeamId = useCallback((id: string | null) => {
-    setHoveredTeamIdRaw(id);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (id === null) {
+      // Clear immediately on mouse leave
+      setHoveredTeamIdRaw(null);
+    } else {
+      // Small debounce on hover-in to prevent jumpiness during scrolling
+      timerRef.current = setTimeout(() => {
+        setHoveredTeamIdRaw(id);
+      }, 80);
+    }
   }, []);
 
   const teamPath = useMemo(() => {
