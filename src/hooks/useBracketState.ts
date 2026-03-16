@@ -1,5 +1,5 @@
 import { useReducer, useCallback, createContext, useContext } from 'react';
-import type { BracketState, BracketAction, Matchup, ScoreUpdate } from '../types/bracket';
+import type { BracketState, BracketAction, Matchup } from '../types/bracket';
 import { createInitialBracket } from '../data/initial-bracket';
 import { calculateAllProbabilities } from '../model/predictions';
 
@@ -378,10 +378,6 @@ export function useBracketState() {
 
   const setRatings = useCallback((ratings: Map<string, number>) => {
     dispatch({ type: 'SET_RATINGS', ratings });
-  }, []);
-
-  const updateScores = useCallback((updates: BracketAction extends { type: 'UPDATE_SCORES' } ? BracketAction : never) => {
-    dispatch(updates);
   }, []);
 
   const advanceWinner = useCallback((matchupId: string, winner: 'top' | 'bottom') => {

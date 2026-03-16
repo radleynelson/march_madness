@@ -26,7 +26,7 @@ interface BracketProps {
   onUserAdvance?: (matchupId: string, winner: 'top' | 'bottom') => void;
 }
 
-export function Bracket({ state, onUserAdvance }: BracketProps) {
+export function Bracket({ state }: BracketProps) {
   const { matchups, regionMatchupIds, finalFourMatchupIds, championshipMatchupId, firstFourMatchupIds } = state;
   const [activeTab, setActiveTab] = useState<BracketTab>('East');
   const [isMedium, setIsMedium] = useState(false);

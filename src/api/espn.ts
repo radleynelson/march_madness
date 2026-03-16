@@ -142,7 +142,6 @@ export function matchEventToMatchup(
  */
 export function getTournamentDatesForToday(): string[] {
   const today = new Date();
-  const todayStr = formatDate(today);
 
   // Check today and the next 2 days for games
   const dates: string[] = [];

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useBracketState, BracketContext } from './hooks/useBracketState';
 import { useTeamRatings } from './hooks/useTeamRatings';
 import { useLiveScores } from './hooks/useLiveScores';

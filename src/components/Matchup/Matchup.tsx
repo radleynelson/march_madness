@@ -19,7 +19,6 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
     topTeam,
     bottomTeam,
     topWinProbability,
-    bottomWinProbability,
     status,
     topScore,
     bottomScore,

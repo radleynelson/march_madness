@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import type { Matchup, Team } from '../../types/bracket';
 import type { TeamProfile, TeamOdds } from '../../types/preview';
 import { TEAM_PROFILES } from '../../data/team-profiles';
@@ -98,6 +98,7 @@ function TeamColumn({ team, prob, profile, odds }: {
 
 export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
   const { topTeam, bottomTeam } = matchup;
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // Close on Escape
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -107,6 +108,8 @@ export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
+    // Scroll modal to top on open
+    modalRef.current?.scrollTo(0, 0);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
@@ -127,7 +130,7 @@ export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+      <div className={styles.modal} ref={modalRef} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.headerTitle}>
