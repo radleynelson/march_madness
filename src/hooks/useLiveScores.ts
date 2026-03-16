@@ -11,159 +11,235 @@ interface UseLiveScoresOptions {
 }
 
 /**
+ * Match ESPN game events to bracket matchups and produce ScoreUpdates.
+ * Uses two-tier matching: espnEventId first, then fuzzy team name matching.
+ */
+function matchGamesToUpdates(
+  rawUpdates: (ScoreUpdate & { _competitors?: EspnCompetitor[] })[],
+  matchups: Map<string, import('../types/bracket').Matchup>,
+): ScoreUpdate[] {
+  const matchedUpdates: ScoreUpdate[] = [];
+
+  for (const update of rawUpdates) {
+    const competitors = update._competitors;
+    if (!competitors) continue;
+
+    // Tier 1: Match by espnEventId (fast, exact)
+    let matched = false;
+    for (const [matchupId, matchup] of matchups) {
+      if (matchup.espnEventId === update.espnEventId) {
+        matchedUpdates.push({ ...update, matchupId });
+        matched = true;
+        break;
+      }
+    }
+
+    if (matched) continue;
+
+    // Tier 2: Match by team names (fuzzy, first-time only)
+    const espnTeamNames = competitors.map(c =>
+      (c.team.shortDisplayName ?? c.team.location ?? '').toLowerCase()
+    );
+
+    for (const [matchupId, matchup] of matchups) {
+      if (matchup.espnEventId) continue; // Already matched to a different event
+
+      const topName = matchup.topTeam?.shortName?.toLowerCase() ?? '';
+      const bottomName = matchup.bottomTeam?.shortName?.toLowerCase() ?? '';
+
+      if (!topName && !bottomName) continue;
+
+      const topMatch = espnTeamNames.some(n => n.includes(topName) || topName.includes(n));
+      const bottomMatch = espnTeamNames.some(n => n.includes(bottomName) || bottomName.includes(n));
+
+      if (topMatch && bottomMatch) {
+        // Determine which ESPN competitor is "top" and which is "bottom"
+        const comp0Name = (competitors[0].team.shortDisplayName ?? competitors[0].team.location ?? '').toLowerCase();
+        const comp0IsTop = comp0Name.includes(topName) || topName.includes(comp0Name);
+
+        const topScore = comp0IsTop ? parseInt(competitors[0].score, 10) : parseInt(competitors[1].score, 10);
+        const bottomScore = comp0IsTop ? parseInt(competitors[1].score, 10) : parseInt(competitors[0].score, 10);
+
+        let winner: 'top' | 'bottom' | null = null;
+        if (update.status === 'final') {
+          if (comp0IsTop) {
+            winner = competitors[0].winner ? 'top' : 'bottom';
+          } else {
+            winner = competitors[1].winner ? 'top' : 'bottom';
+          }
+        }
+
+        matchedUpdates.push({
+          espnEventId: update.espnEventId,
+          matchupId,
+          status: update.status,
+          topScore: isNaN(topScore) ? null : topScore,
+          bottomScore: isNaN(bottomScore) ? null : bottomScore,
+          clock: update.clock,
+          period: update.period,
+          liveTopWinProbability: update.liveTopWinProbability,
+          winner,
+        });
+        break;
+      }
+    }
+  }
+
+  return matchedUpdates;
+}
+
+/**
  * Hook that polls ESPN for live scores and updates the bracket state.
+ *
+ * On initial load, fetches ALL past tournament dates in chronological order
+ * to backfill results (R64 before R32, etc.), ensuring the bracket is fully
+ * populated regardless of when the user visits.
+ *
+ * After backfill, polls only today's date for live updates.
  */
 export function useLiveScores({ state, dispatch, enabled = true }: UseLiveScoresOptions) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const errorCountRef = useRef(0);
+  const backfillDoneRef = useRef(false);
+  // Use a ref for matchups so the polling callback doesn't re-create on every state change
+  const matchupsRef = useRef(state.matchups);
+  matchupsRef.current = state.matchups;
 
-  const pollScores = useCallback(async () => {
+  /**
+   * Process a single day's ESPN data: fetch, match, dispatch updates, advance winners.
+   * Returns true if any live games were found.
+   */
+  const processDayScores = useCallback(async (date: string): Promise<{ anyLive: boolean; anyScheduled: boolean }> => {
+    const data = await fetchScoreboard(date);
+    const tourneyGames = filterTournamentGames(data.events);
+
+    if (tourneyGames.length === 0) return { anyLive: false, anyScheduled: false };
+
+    const rawUpdates = eventsToScoreUpdates(tourneyGames) as (ScoreUpdate & { _competitors?: EspnCompetitor[] })[];
+    const matchedUpdates = matchGamesToUpdates(rawUpdates, matchupsRef.current);
+
+    if (matchedUpdates.length > 0) {
+      dispatch({ type: 'UPDATE_SCORES', updates: matchedUpdates });
+
+      // Auto-advance winners for final games
+      for (const update of matchedUpdates) {
+        if (update.status === 'final' && update.winner && update.matchupId) {
+          dispatch({ type: 'ADVANCE_WINNER', matchupId: update.matchupId, winner: update.winner });
+        }
+      }
+    }
+
+    const anyLive = tourneyGames.some(g => g.status.type.state === 'in');
+    const anyScheduled = tourneyGames.some(g => g.status.type.state === 'pre');
+    return { anyLive, anyScheduled };
+  }, [dispatch]);
+
+  /**
+   * Backfill all past tournament dates, then start polling today.
+   */
+  const backfillAndPoll = useCallback(async () => {
     if (!enabled) return;
 
     try {
-      // Get today's date
       const today = formatDate(new Date());
 
-      // Check if today is a tournament date
-      if (!ALL_TOURNAMENT_DATES.includes(today)) {
-        return;
-      }
+      // Get all tournament dates up to and including today, in chronological order.
+      // Processing in order ensures R64 winners are placed before R32 matching, etc.
+      const pastAndTodayDates = ALL_TOURNAMENT_DATES
+        .filter(d => d <= today)
+        .sort();
 
-      const data = await fetchScoreboard(today);
-      const tourneyGames = filterTournamentGames(data.events);
+      if (pastAndTodayDates.length === 0) return;
 
-      if (tourneyGames.length === 0) return;
-
-      // Convert to score updates
-      const rawUpdates = eventsToScoreUpdates(tourneyGames) as (ScoreUpdate & { _competitors?: EspnCompetitor[] })[];
-
-      // Match updates to bracket matchups
-      const matchedUpdates: ScoreUpdate[] = [];
-
-      for (const update of rawUpdates) {
-        const competitors = update._competitors;
-        if (!competitors) continue;
-
-        // Try to find matching matchup by espnEventId first
-        let matched = false;
-        for (const [matchupId, matchup] of state.matchups) {
-          if (matchup.espnEventId === update.espnEventId) {
-            matchedUpdates.push({ ...update, matchupId });
-            matched = true;
-            break;
+      // Process each day sequentially (order matters for winner propagation)
+      let anyLive = false;
+      let anyScheduled = false;
+      for (const date of pastAndTodayDates) {
+        try {
+          const result = await processDayScores(date);
+          if (date === today) {
+            anyLive = result.anyLive;
+            anyScheduled = result.anyScheduled;
           }
-        }
-
-        if (matched) continue;
-
-        // Try to match by team names
-        const espnTeamNames = competitors.map(c =>
-          (c.team.shortDisplayName ?? c.team.location ?? '').toLowerCase()
-        );
-
-        for (const [matchupId, matchup] of state.matchups) {
-          if (matchup.espnEventId) continue; // Already matched
-
-          const topName = matchup.topTeam?.shortName?.toLowerCase() ?? '';
-          const bottomName = matchup.bottomTeam?.shortName?.toLowerCase() ?? '';
-
-          if (!topName && !bottomName) continue;
-
-          const topMatch = espnTeamNames.some(n => n.includes(topName) || topName.includes(n));
-          const bottomMatch = espnTeamNames.some(n => n.includes(bottomName) || bottomName.includes(n));
-
-          if (topMatch && bottomMatch) {
-            // Determine which ESPN competitor is "top" and which is "bottom"
-            const comp0Name = (competitors[0].team.shortDisplayName ?? competitors[0].team.location ?? '').toLowerCase();
-            const comp0IsTop = comp0Name.includes(topName) || topName.includes(comp0Name);
-
-            const topScore = comp0IsTop ? parseInt(competitors[0].score, 10) : parseInt(competitors[1].score, 10);
-            const bottomScore = comp0IsTop ? parseInt(competitors[1].score, 10) : parseInt(competitors[0].score, 10);
-
-            let winner: 'top' | 'bottom' | null = null;
-            if (update.status === 'final') {
-              if (comp0IsTop) {
-                winner = competitors[0].winner ? 'top' : 'bottom';
-              } else {
-                winner = competitors[1].winner ? 'top' : 'bottom';
-              }
-            }
-
-            matchedUpdates.push({
-              espnEventId: update.espnEventId,
-              matchupId,
-              status: update.status,
-              topScore: isNaN(topScore) ? null : topScore,
-              bottomScore: isNaN(bottomScore) ? null : bottomScore,
-              clock: update.clock,
-              period: update.period,
-              liveTopWinProbability: update.liveTopWinProbability,
-              winner,
-            });
-            break;
-          }
+        } catch (error) {
+          console.warn(`Failed to fetch scores for ${date}:`, error);
+          // Continue with other dates even if one fails
         }
       }
 
-      if (matchedUpdates.length > 0) {
-        dispatch({ type: 'UPDATE_SCORES', updates: matchedUpdates });
+      backfillDoneRef.current = true;
+      errorCountRef.current = 0;
 
-        // Auto-advance winners
-        for (const update of matchedUpdates) {
-          if (update.status === 'final' && update.winner && update.matchupId) {
-            dispatch({ type: 'ADVANCE_WINNER', matchupId: update.matchupId, winner: update.winner });
-          }
-        }
+      // Set polling interval based on today's game state
+      let pollInterval: number;
+      if (anyLive) {
+        pollInterval = POLLING_INTERVALS.GAMES_LIVE;
+      } else if (anyScheduled) {
+        pollInterval = POLLING_INTERVALS.GAMES_SCHEDULED;
+      } else {
+        pollInterval = POLLING_INTERVALS.NO_GAMES;
       }
 
-      // Determine next poll interval
-      const anyLive = tourneyGames.some(g => g.status.type.state === 'in');
-      const anyScheduled = tourneyGames.some(g => g.status.type.state === 'pre');
-      const allFinal = tourneyGames.every(g => g.status.type.state === 'post');
+      // Start polling only today's date going forward
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = setInterval(pollToday, pollInterval);
+    } catch (error) {
+      console.error('Error during backfill:', error);
+      errorCountRef.current++;
+      const backoff = errorCountRef.current <= 2
+        ? POLLING_INTERVALS.ERROR_RETRY_1
+        : POLLING_INTERVALS.ERROR_RETRY_2;
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = setInterval(backfillAndPoll, backoff);
+    }
+  }, [enabled, processDayScores]);
 
+  /**
+   * Poll only today's date for live/ongoing updates.
+   */
+  const pollToday = useCallback(async () => {
+    if (!enabled) return;
+
+    try {
+      const today = formatDate(new Date());
+      if (!ALL_TOURNAMENT_DATES.includes(today)) return;
+
+      const { anyLive, anyScheduled } = await processDayScores(today);
+
+      errorCountRef.current = 0;
+
+      // Adjust poll interval
       let newInterval: number;
       if (anyLive) {
         newInterval = POLLING_INTERVALS.GAMES_LIVE;
       } else if (anyScheduled) {
         newInterval = POLLING_INTERVALS.GAMES_SCHEDULED;
-      } else if (allFinal) {
-        newInterval = POLLING_INTERVALS.NO_GAMES;
       } else {
         newInterval = POLLING_INTERVALS.NO_GAMES;
       }
 
-      // Reset error count on success
-      errorCountRef.current = 0;
-
-      // Update interval if changed
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
-        intervalRef.current = setInterval(pollScores, newInterval);
+        intervalRef.current = setInterval(pollToday, newInterval);
       }
     } catch (error) {
       console.error('Error polling ESPN:', error);
       errorCountRef.current++;
-
-      // Back off on errors
-      const backoffInterval = errorCountRef.current <= 2
+      const backoff = errorCountRef.current <= 2
         ? POLLING_INTERVALS.ERROR_RETRY_1
         : POLLING_INTERVALS.ERROR_RETRY_2;
-
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
-        intervalRef.current = setInterval(pollScores, backoffInterval);
+        intervalRef.current = setInterval(pollToday, backoff);
       }
     }
-  }, [enabled, state.matchups, dispatch]);
+  }, [enabled, processDayScores]);
 
   useEffect(() => {
     if (!enabled) return;
 
-    // Initial poll
-    pollScores();
-
-    // Set up polling interval (start with games scheduled interval)
-    intervalRef.current = setInterval(pollScores, POLLING_INTERVALS.GAMES_SCHEDULED);
+    // On mount: backfill all past tournament dates, then start polling today
+    backfillAndPoll();
 
     return () => {
       if (intervalRef.current) {
@@ -171,5 +247,5 @@ export function useLiveScores({ state, dispatch, enabled = true }: UseLiveScores
         intervalRef.current = null;
       }
     };
-  }, [enabled, pollScores]);
+  }, [enabled, backfillAndPoll]);
 }
