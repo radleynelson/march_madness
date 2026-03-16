@@ -294,18 +294,12 @@ async function handleFillBracket(req, res) {
     console.log(`[fill-bracket] userPrompt length: ${userPrompt.length} chars`);
 
     if (provider === 'cli') {
-      // When user has custom instructions, use a modified system prompt that defers to them
-      const systemPrompt = customPrompt
-        ? `You are an NCAA March Madness bracket analyst. The user has given you specific instructions for how to pick winners — YOU MUST FOLLOW THEM EXACTLY, even if they seem unusual. Use web search to research what the user is asking about.
+      const systemPrompt = FILL_BRACKET_SYSTEM + (customPrompt ? `
 
-Respond ONLY with a JSON object in this exact format:
-{
-  "picks": { "MATCHUP-ID": "top" or "bottom", ... },
-  "reasoning": "Explain how you applied the user's criteria based on your web search findings."
-}
+ADDITIONAL PRIORITY INSTRUCTIONS:
+The user has provided specific criteria for making picks. Their criteria is the PRIMARY factor — use web search if needed to research it. However, you still have all the bracket data, team ratings, and model probabilities as context. When the user's criteria doesn't give a clear answer for a matchup (e.g., no data available for both teams), fall back on the team ratings and model probabilities provided in the bracket data.
 
-Fill in ALL undecided matchups. "top" = first-listed team wins, "bottom" = second-listed team wins.`
-        : FILL_BRACKET_SYSTEM;
+In your reasoning, always reference actual team names (never say "top team" or "bottom team"). Explain how you applied the user's criteria AND note where you fell back on model analysis.` : '');
 
       const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
       console.log(`[fill-bracket] CLI prompt first 500 chars:\n${fullPrompt.slice(0, 500)}`);
@@ -325,17 +319,12 @@ Fill in ALL undecided matchups. "top" = first-listed team wins, "bottom" = secon
       }
 
       const apiMessages = [{ role: 'user', content: userPrompt }];
-      const apiSystemPrompt = customPrompt
-        ? `You are an NCAA March Madness bracket analyst. The user has given you specific instructions for how to pick winners — YOU MUST FOLLOW THEM EXACTLY, even if they seem unusual. Use web search to research what the user is asking about.
+      const apiSystemPrompt = FILL_BRACKET_SYSTEM + (customPrompt ? `
 
-Respond ONLY with a JSON object in this exact format:
-{
-  "picks": { "MATCHUP-ID": "top" or "bottom", ... },
-  "reasoning": "Explain how you applied the user's criteria based on your web search findings."
-}
+ADDITIONAL PRIORITY INSTRUCTIONS:
+The user has provided specific criteria for making picks. Their criteria is the PRIMARY factor — use web search if needed to research it. However, you still have all the bracket data, team ratings, and model probabilities as context. When the user's criteria doesn't give a clear answer for a matchup (e.g., no data available for both teams), fall back on the team ratings and model probabilities provided in the bracket data.
 
-Fill in ALL undecided matchups. "top" = first-listed team wins, "bottom" = second-listed team wins.`
-        : FILL_BRACKET_SYSTEM;
+In your reasoning, always reference actual team names (never say "top team" or "bottom team"). Explain how you applied the user's criteria AND note where you fell back on model analysis.` : '');
       const apiResponse = await callAnthropicApi(apiMessages, apiSystemPrompt, apiKey);
       rawContent = extractTextFromApiResponse(apiResponse);
     }
