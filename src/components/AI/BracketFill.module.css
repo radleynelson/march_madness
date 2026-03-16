@@ -263,6 +263,19 @@
   color: #888;
 }
 
+.historyAction {
+  background: none;
+  border: none;
+  color: #bbb;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 4px;
+}
+
+.historyAction:hover {
+  color: #8b5cf6;
+}
+
 .historyDelete {
   background: none;
   border: none;

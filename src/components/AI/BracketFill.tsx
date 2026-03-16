@@ -111,9 +111,12 @@ export function BracketFill({ onClose }: BracketFillProps) {
 
   const handleSave = useCallback(async () => {
     if (!result) return;
+    const defaultName = `AI Bracket ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
+    const name = window.prompt('Name this simulation:', defaultName);
+    if (name === null) return; // cancelled
     const sim: Simulation = {
       id: `sim_${Date.now()}`,
-      name: `AI Bracket ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+      name: name.trim() || defaultName,
       createdAt: Date.now(),
       picks: result.picks,
       reasoning: result.reasoning,
@@ -124,6 +127,15 @@ export function BracketFill({ onClose }: BracketFillProps) {
 
   const handleLoadSimulation = useCallback((sim: Simulation) => {
     setResult({ picks: sim.picks, reasoning: sim.reasoning || 'No reasoning saved for this simulation.' });
+  }, []);
+
+  const handleRenameSimulation = useCallback(async (sim: Simulation, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newName = window.prompt('Rename simulation:', sim.name);
+    if (newName === null || newName.trim() === '') return;
+    const updated = { ...sim, name: newName.trim() };
+    await saveSimulation(updated);
+    setSimulations(prev => prev.map(s => s.id === sim.id ? updated : s));
   }, []);
 
   const handleDeleteSimulation = useCallback(async (id: string, e: React.MouseEvent) => {
@@ -234,6 +246,13 @@ export function BracketFill({ onClose }: BracketFillProps) {
                   <span className={styles.historyDate}>
                     {new Date(sim.createdAt).toLocaleDateString()}
                   </span>
+                  <button
+                    className={styles.historyAction}
+                    onClick={(e) => handleRenameSimulation(sim, e)}
+                    title="Rename"
+                  >
+                    &#9998;
+                  </button>
                   <button
                     className={styles.historyDelete}
                     onClick={(e) => handleDeleteSimulation(sim.id, e)}
