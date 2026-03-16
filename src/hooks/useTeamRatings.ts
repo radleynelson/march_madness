@@ -23,7 +23,6 @@ export function useTeamRatings({ state, dispatch }: UseTeamRatingsOptions) {
         const torvikRatings = await fetchTorvikRatings();
 
         if (torvikRatings.size === 0) {
-          setError('Using seed-based fallback ratings');
           setLoaded(true);
           return;
         }
@@ -33,7 +32,7 @@ export function useTeamRatings({ state, dispatch }: UseTeamRatingsOptions) {
         setLoaded(true);
       } catch (err) {
         console.error('Error loading ratings:', err);
-        setError('Failed to load ratings, using seed-based fallback');
+        console.warn('Using seed-based fallback ratings');
         setLoaded(true);
       }
     }
