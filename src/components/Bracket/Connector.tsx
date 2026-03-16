@@ -48,14 +48,15 @@ export function Connector({ pairs, reversed = false, highlightedArms, highlightC
           style={isTopHighlighted ? armStyle : undefined}
         />
         <div className={`${styles.midLine} ${isPairHighlighted ? styles.midHighlighted : ''}`}>
-          {isPairHighlighted && probLabel && (
-            <span
-              className={`${styles.probLabel} ${reversed ? styles.probLabelReversed : ''}`}
-              style={highlightColor ? { color: highlightColor } : undefined}
-            >
-              {probLabel}
-            </span>
-          )}
+          <span
+            className={`${styles.probLabel} ${reversed ? styles.probLabelReversed : ''}`}
+            style={{
+              color: highlightColor ?? '#333',
+              visibility: isPairHighlighted && probLabel ? 'visible' : 'hidden',
+            }}
+          >
+            {probLabel || '\u00A0'}
+          </span>
         </div>
         <div
           className={`${styles.bottomArm} ${isBottomHighlighted ? styles.highlighted : ''}`}

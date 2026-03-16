@@ -89,7 +89,9 @@ export function Region({ name, matchups, reversed = false }: RegionProps) {
   });
 
   // E8 exit probability (chance of reaching FF)
-  let e8ExitLabel: React.ReactNode = null;
+  let e8ExitVisible = false;
+  let e8ExitText = '\u00A0';
+  let e8ExitColor = '#333';
   if (teamPath) {
     const lastRound = sortedRounds[sortedRounds.length - 1];
     if (lastRound) {
@@ -100,14 +102,9 @@ export function Region({ name, matchups, reversed = false }: RegionProps) {
         if (probKey) {
           const prob = teamPath.team.probabilities[probKey];
           if (prob > 0) {
-            e8ExitLabel = (
-              <div
-                className={styles.e8ExitLabel}
-                style={{ color: teamPath.team.primaryColor }}
-              >
-                {formatProb(prob)}
-              </div>
-            );
+            e8ExitVisible = true;
+            e8ExitText = formatProb(prob);
+            e8ExitColor = teamPath.team.primaryColor;
           }
         }
       }
@@ -121,7 +118,15 @@ export function Region({ name, matchups, reversed = false }: RegionProps) {
       </div>
       <div className={`${styles.rounds} ${reversed ? styles.roundsReversed : ''}`}>
         {elements}
-        {e8ExitLabel}
+        <div
+          className={styles.e8ExitLabel}
+          style={{
+            color: e8ExitColor,
+            visibility: e8ExitVisible ? 'visible' : 'hidden',
+          }}
+        >
+          {e8ExitText}
+        </div>
       </div>
     </div>
   );

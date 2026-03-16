@@ -31,3 +31,19 @@
 .reversed .header {
   text-align: right;
 }
+
+/* E8 exit probability label — always rendered with fixed width to prevent layout shifts */
+.e8ExitLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  font-size: 14px;
+  font-weight: 900;
+  text-shadow:
+    -1px -1px 0 #fff,
+    1px -1px 0 #fff,
+    -1px 1px 0 #fff,
+    1px 1px 0 #fff,
+    0 0 6px rgba(255,255,255,0.9);
+}
