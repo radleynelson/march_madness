@@ -3,9 +3,11 @@ import styles from './Header.module.css';
 
 interface HeaderProps {
   state: BracketState;
+  hasUserPicks?: boolean;
+  onClearPicks?: () => void;
 }
 
-export function Header({ state }: HeaderProps) {
+export function Header({ state, hasUserPicks, onClearPicks }: HeaderProps) {
   const { isLive, lastUpdated, teams } = state;
 
   // Find top championship favorites
@@ -43,6 +45,11 @@ export function Header({ state }: HeaderProps) {
         )}
 
         <div className={styles.status}>
+          {hasUserPicks && (
+            <button className={styles.resetBtn} onClick={onClearPicks}>
+              Reset Picks
+            </button>
+          )}
           {isLive && (
             <span className={styles.liveTag}>
               <span className={styles.liveDot} />

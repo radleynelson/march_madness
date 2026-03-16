@@ -72,3 +72,18 @@
 .previewBtn:hover {
   background: #1a73e8;
 }
+
+/* Clickable team rows for user picking */
+.clickable {
+  cursor: pointer;
+}
+.clickable:hover {
+  background: #f0f7ff;
+}
+
+/* User pick styling on the matchup card */
+.userPick {
+  border-color: #8b5cf6 !important;
+  border-width: 2px;
+  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.2), 0 1px 4px rgba(139, 92, 246, 0.15);
+}

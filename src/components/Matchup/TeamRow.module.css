@@ -118,3 +118,19 @@
 .pathHighlight .probability {
   color: inherit;
 }
+
+/* User-picked winner styling */
+.userPicked {
+  background: #f3f0ff;
+  font-weight: 700;
+}
+
+.userPicked .name {
+  font-weight: 800;
+  color: #6d28d9;
+}
+
+.userPicked .seed {
+  background: #8b5cf6;
+  color: #fff;
+}

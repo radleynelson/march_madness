@@ -9,7 +9,7 @@ import { MatchupPreview } from './components/Preview/MatchupPreview';
 import './styles/globals.css';
 
 function AppContent() {
-  const { state, dispatch } = useBracketState();
+  const { state, dispatch, userAdvance, clearUserPicks } = useBracketState();
 
   // Load Torvik ratings on mount
   const { error: ratingsError } = useTeamRatings({ state, dispatch });
@@ -31,7 +31,11 @@ function AppContent() {
       <HoverContext.Provider value={hoverState}>
         <PreviewContext.Provider value={previewState}>
           <div>
-            <Header state={state} />
+            <Header
+              state={state}
+              hasUserPicks={state.userPicks.size > 0}
+              onClearPicks={clearUserPicks}
+            />
             {ratingsError && (
               <div style={{
                 textAlign: 'center',
@@ -43,7 +47,7 @@ function AppContent() {
                 {ratingsError}
               </div>
             )}
-            <Bracket state={state} />
+            <Bracket state={state} onUserAdvance={userAdvance} />
             {previewMatchup && (
               <MatchupPreview
                 matchup={previewMatchup}

@@ -6,10 +6,11 @@ import styles from './Bracket.module.css';
 
 interface BracketProps {
   state: BracketState;
+  onUserAdvance?: (matchupId: string, winner: 'top' | 'bottom') => void;
 }
 
-export function Bracket({ state }: BracketProps) {
-  const { matchups, regionMatchupIds, finalFourMatchupIds, championshipMatchupId, firstFourMatchupIds } = state;
+export function Bracket({ state, onUserAdvance }: BracketProps) {
+  const { matchups, regionMatchupIds, finalFourMatchupIds, championshipMatchupId, firstFourMatchupIds, userPicks } = state;
 
   // Get region matchups
   const getRegionMatchups = (region: RegionName): MatchupType[] => {

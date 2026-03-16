@@ -469,5 +469,8 @@ export function createInitialBracket(): BracketState {
     firstFourMatchupIds: firstFourMatchups.map(m => m.id),
     lastUpdated: new Date(),
     isLive: false,
+    userPicks: new Set<string>(),
+    cachedRatings: null,
+    cachedScoreUpdates: [],
   };
 }

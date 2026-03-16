@@ -90,6 +90,8 @@ export type BracketAction =
   | { type: 'SET_RATINGS'; ratings: Map<string, number> }
   | { type: 'UPDATE_SCORES'; updates: ScoreUpdate[] }
   | { type: 'ADVANCE_WINNER'; matchupId: string; winner: 'top' | 'bottom' }
+  | { type: 'USER_ADVANCE'; matchupId: string; winner: 'top' | 'bottom' }
+  | { type: 'CLEAR_USER_PICKS' }
   | { type: 'RECALCULATE_PREDICTIONS' };
 
 export interface ScoreUpdate {
@@ -113,4 +115,10 @@ export interface BracketState {
   firstFourMatchupIds: string[];
   lastUpdated: Date;
   isLive: boolean;
+  /** Matchup IDs where the user manually picked a winner (not from live results) */
+  userPicks: Set<string>;
+  /** Cached ratings to re-apply after reset */
+  cachedRatings: Map<string, number> | null;
+  /** Cached live score updates to replay after reset */
+  cachedScoreUpdates: ScoreUpdate[];
 }

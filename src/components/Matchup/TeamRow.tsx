@@ -10,9 +10,10 @@ interface TeamRowProps {
   position: 'top' | 'bottom';
   isOnPath?: boolean;
   pathColor?: string;
+  isUserPick?: boolean;
 }
 
-export function TeamRow({ team, score, isWinner, isLive, probability, position, isOnPath = false, pathColor }: TeamRowProps) {
+export function TeamRow({ team, score, isWinner, isLive, probability, position, isOnPath = false, pathColor, isUserPick = false }: TeamRowProps) {
   if (!team) {
     return (
       <div className={`${styles.row} ${styles.tbd} ${styles[position]}`}>
@@ -26,7 +27,7 @@ export function TeamRow({ team, score, isWinner, isLive, probability, position, 
 
   return (
     <div
-      className={`${styles.row} ${styles[position]} ${isEliminated ? styles.eliminated : ''} ${isWinner ? styles.winner : ''} ${isLive ? styles.live : ''} ${isOnPath ? styles.pathHighlight : ''}`}
+      className={`${styles.row} ${styles[position]} ${isEliminated ? styles.eliminated : ''} ${isWinner ? styles.winner : ''} ${isLive ? styles.live : ''} ${isOnPath ? styles.pathHighlight : ''} ${isUserPick ? styles.userPicked : ''}`}
       style={isOnPath && pathColor ? {
         background: pathColor,
         color: '#fff',
