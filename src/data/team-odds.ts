@@ -1,0 +1,118 @@
+import type { TeamOdds } from '../types/preview';
+
+// Championship odds sourced from DraftKings/SI.com as of March 16, 2026
+export const TEAM_ODDS: Record<string, TeamOdds> = {
+  'Duke':           { championshipOdds: '+330',    impliedProb: 0.233 },
+  'Michigan':       { championshipOdds: '+350',    impliedProb: 0.222 },
+  'Arizona':        { championshipOdds: '+400',    impliedProb: 0.200 },
+  'Florida':        { championshipOdds: '+700',    impliedProb: 0.125 },
+  'Houston':        { championshipOdds: '+1000',   impliedProb: 0.091 },
+  'UConn':          { championshipOdds: '+1700',   impliedProb: 0.056 },
+  'Illinois':       { championshipOdds: '+1900',   impliedProb: 0.050 },
+  'Iowa State':     { championshipOdds: '+2200',   impliedProb: 0.043 },
+  'Purdue':         { championshipOdds: '+3500',   impliedProb: 0.028 },
+  'Michigan State': { championshipOdds: '+4000',   impliedProb: 0.024 },
+  'Kansas':         { championshipOdds: '+5000',   impliedProb: 0.020 },
+  'Arkansas':       { championshipOdds: '+5000',   impliedProb: 0.020 },
+  "St. John's":     { championshipOdds: '+5000',   impliedProb: 0.020 },
+  'Gonzaga':        { championshipOdds: '+5500',   impliedProb: 0.018 },
+  'Virginia':       { championshipOdds: '+6000',   impliedProb: 0.016 },
+  'Vanderbilt':     { championshipOdds: '+6500',   impliedProb: 0.015 },
+  'Wisconsin':      { championshipOdds: '+7000',   impliedProb: 0.014 },
+  'Tennessee':      { championshipOdds: '+9000',   impliedProb: 0.011 },
+  'Nebraska':       { championshipOdds: '+10000',  impliedProb: 0.010 },
+  'Kentucky':       { championshipOdds: '+10000',  impliedProb: 0.010 },
+  'Alabama':        { championshipOdds: '+10000',  impliedProb: 0.010 },
+  'North Carolina': { championshipOdds: '+11000',  impliedProb: 0.009 },
+  'Texas Tech':     { championshipOdds: '+11000',  impliedProb: 0.009 },
+  'Louisville':     { championshipOdds: '+12000',  impliedProb: 0.008 },
+  'BYU':            { championshipOdds: '+13000',  impliedProb: 0.008 },
+  'UCLA':           { championshipOdds: '+13000',  impliedProb: 0.008 },
+  'Iowa':           { championshipOdds: '+20000',  impliedProb: 0.005 },
+  'Clemson':        { championshipOdds: '+20000',  impliedProb: 0.005 },
+  'Texas A&M':      { championshipOdds: '+20000',  impliedProb: 0.005 },
+  'NC State':       { championshipOdds: '+20000',  impliedProb: 0.005 },
+  'Missouri':       { championshipOdds: '+25000',  impliedProb: 0.004 },
+  'Miami':          { championshipOdds: '+25000',  impliedProb: 0.004 },
+  'Villanova':      { championshipOdds: '+25000',  impliedProb: 0.004 },
+  'Utah State':     { championshipOdds: '+25000',  impliedProb: 0.004 },
+  "Saint Mary's":   { championshipOdds: '+25000',  impliedProb: 0.004 },
+  'Ohio State':     { championshipOdds: '+25000',  impliedProb: 0.004 },
+  'Georgia':        { championshipOdds: '+30000',  impliedProb: 0.003 },
+  'UCF':            { championshipOdds: '+30000',  impliedProb: 0.003 },
+  'TCU':            { championshipOdds: '+30000',  impliedProb: 0.003 },
+  'SMU':            { championshipOdds: '+35000',  impliedProb: 0.003 },
+  'VCU':            { championshipOdds: '+40000',  impliedProb: 0.002 },
+  'Saint Louis':    { championshipOdds: '+40000',  impliedProb: 0.002 },
+  'Santa Clara':    { championshipOdds: '+40000',  impliedProb: 0.002 },
+  'Texas':          { championshipOdds: '+40000',  impliedProb: 0.002 },
+  'Akron':          { championshipOdds: '+50000',  impliedProb: 0.002 },
+  'South Florida':  { championshipOdds: '+60000',  impliedProb: 0.002 },
+  'Miami (OH)':     { championshipOdds: '+100000', impliedProb: 0.001 },
+  'Penn':           { championshipOdds: '+100000', impliedProb: 0.001 },
+  'McNeese':        { championshipOdds: '+150000', impliedProb: 0.001 },
+  'Northern Iowa':  { championshipOdds: '+150000', impliedProb: 0.001 },
+  'UMBC':           { championshipOdds: '+150000', impliedProb: 0.001 },
+  'Hawaii':         { championshipOdds: '+150000', impliedProb: 0.001 },
+  'Troy':           { championshipOdds: '+150000', impliedProb: 0.001 },
+  'Hofstra':        { championshipOdds: '+200000', impliedProb: 0.001 },
+  'Prairie View':   { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'Siena':          { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'Queens':         { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'Lehigh':         { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'Idaho':          { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'North Dakota St': { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'Cal Baptist':    { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'Wright State':   { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'Tennessee St':   { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'Howard':         { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'High Point':     { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'LIU':            { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'Kennesaw St':    { championshipOdds: '+200000', impliedProb: 0.0005 },
+  'Furman':         { championshipOdds: '+200000', impliedProb: 0.0005 },
+};
+
+// First-round betting lines (spread from favorite's perspective)
+export interface MatchupLine {
+  spread: number;       // favorite's spread (negative = favored by)
+  favoriteML: number;   // favorite moneyline
+  underdogML: number;   // underdog moneyline
+  total: number;        // over/under
+  favorite: string;     // short name of favorite
+}
+
+// Keyed by matchup ID
+export const MATCHUP_LINES: Record<string, MatchupLine> = {
+  // East
+  'E-R64-0': { spread: -27.5, favoriteML: -20000, underdogML: 3500,  total: 136.5, favorite: 'Duke' },
+  'E-R64-1': { spread: -2.5,  favoriteML: -198,   underdogML: 164,   total: 147.5, favorite: 'Ohio State' },
+  'E-R64-2': { spread: -9.5,  favoriteML: -425,   underdogML: 330,   total: 130.5, favorite: "St. John's" },
+  'E-R64-3': { spread: -13.5, favoriteML: -1100,  underdogML: 700,   total: 135.5, favorite: 'Kansas' },
+  'E-R64-4': { spread: -6.5,  favoriteML: -285,   underdogML: 230,   total: 163.5, favorite: 'Louisville' },
+  'E-R64-5': { spread: -15.5, favoriteML: -1650,  underdogML: 950,   total: 143.5, favorite: 'Michigan State' },
+  'E-R64-6': { spread: -6.5,  favoriteML: -245,   underdogML: 200,   total: 154.5, favorite: 'UCLA' },
+  'E-R64-7': { spread: -19.5, favoriteML: -8000,  underdogML: 2200,  total: 136.5, favorite: 'UConn' },
+  // West
+  'W-R64-0': { spread: -29.5, favoriteML: -100000, underdogML: 5000, total: 151.5, favorite: 'Arizona' },
+  'W-R64-1': { spread: -2.5,  favoriteML: -135,   underdogML: 114,   total: 147.5, favorite: 'Villanova' },
+  'W-R64-2': { spread: -11.5, favoriteML: -850,   underdogML: 575,   total: 165.5, favorite: 'Wisconsin' },
+  'W-R64-3': { spread: -15.5, favoriteML: -1650,  underdogML: 950,   total: 161.5, favorite: 'Arkansas' },
+  'W-R64-5': { spread: -19.5, favoriteML: -8000,  underdogML: 2200,  total: 158.5, favorite: 'Gonzaga' },
+  'W-R64-6': { spread: -2.5,  favoriteML: -142,   underdogML: 120,   total: 150.5, favorite: 'Miami' },
+  'W-R64-7': { spread: -22.5, favoriteML: -8000,  underdogML: 2200,  total: 164.5, favorite: 'Purdue' },
+  // South
+  'S-R64-1': { spread: -1.5,  favoriteML: -142,   underdogML: 120,   total: 130.5, favorite: 'Clemson' },
+  'S-R64-2': { spread: -10.5, favoriteML: -625,   underdogML: 455,   total: 150.5, favorite: 'Vanderbilt' },
+  'S-R64-3': { spread: -13.5, favoriteML: -1200,  underdogML: 750,   total: 135.5, favorite: 'Nebraska' },
+  'S-R64-4': { spread: -2.5,  favoriteML: -142,   underdogML: 120,   total: 155.5, favorite: 'North Carolina' },
+  'S-R64-5': { spread: -12.5, favoriteML: -850,   underdogML: 575,   total: 146.5, favorite: 'Illinois' },
+  'S-R64-6': { spread: -3.5,  favoriteML: -170,   underdogML: 144,   total: 141.5, favorite: "Saint Mary's" },
+  'S-R64-7': { spread: -17.5, favoriteML: -3200,  underdogML: 1400,  total: 138.5, favorite: 'Houston' },
+  // Midwest
+  'MW-R64-1': { spread: -1.5,  favoriteML: -148,   underdogML: 124,  total: 170.5, favorite: 'Georgia' },
+  'MW-R64-2': { spread: -8.5,  favoriteML: -410,   underdogML: 320,  total: 155.5, favorite: 'Texas Tech' },
+  'MW-R64-3': { spread: -12.5, favoriteML: -700,   underdogML: 500,  total: 161.5, favorite: 'Alabama' },
+  'MW-R64-5': { spread: -17.5, favoriteML: -3200,  underdogML: 1400, total: 144.5, favorite: 'Virginia' },
+  'MW-R64-6': { spread: -2.5,  favoriteML: -148,   underdogML: 124,  total: 161.5, favorite: 'Kentucky' },
+  'MW-R64-7': { spread: -23.5, favoriteML: -6500,  underdogML: 2000, total: 148.5, favorite: 'Iowa State' },
+};

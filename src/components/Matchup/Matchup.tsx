@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import type { Matchup as MatchupType } from '../../types/bracket';
 import { useHoverContext } from '../../hooks/useHoverState';
+import { usePreviewContext } from '../../hooks/usePreview';
 import { TeamRow } from './TeamRow';
 import { ProbabilityBar } from './ProbabilityBar';
 import { LiveIndicator } from './LiveIndicator';
@@ -27,12 +28,19 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
   } = matchup;
 
   const { hoveredTeamId, teamPath, setHoveredTeamId } = useHoverContext();
+  const { openPreview } = usePreviewContext();
 
   const handleTeamHover = useCallback((teamId: string | undefined) => {
     if (teamId) {
       setHoveredTeamId(teamId);
     }
   }, [setHoveredTeamId]);
+
+  const handlePreviewClick = useCallback(() => {
+    if (topTeam && bottomTeam) {
+      openPreview(matchup.id);
+    }
+  }, [topTeam, bottomTeam, matchup.id, openPreview]);
 
   const handleMouseLeave = useCallback(() => {
     setHoveredTeamId(null);
@@ -101,6 +109,17 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
           pathColor={isOnPath && pathSlot === 'bottom' ? pathColor : undefined}
         />
       </div>
+
+      {/* Preview button */}
+      {!compact && topTeam && bottomTeam && (
+        <button
+          className={styles.previewBtn}
+          onClick={handlePreviewClick}
+          title="Game Preview"
+        >
+          Preview
+        </button>
+      )}
     </div>
   );
 }
