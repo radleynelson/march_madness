@@ -100,7 +100,7 @@ export function BracketFill({ onClose }: BracketFillProps) {
     } finally {
       setLoading(false);
     }
-  }, [loading, settings, buildBracketContext]);
+  }, [loading, settings, buildBracketContext, customPrompt]);
 
   const handleApply = useCallback(() => {
     if (!result) return;
