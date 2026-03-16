@@ -28,10 +28,24 @@ function isEliminated(team: Team): boolean {
   );
 }
 
-function isRoundCompleted(team: Team, roundKey: string): boolean {
-  // A team "completed" a round if its probability is exactly 1.0
-  const val = team.probabilities[roundKey as keyof typeof team.probabilities];
-  return val === 1.0;
+/**
+ * Check if a team has actually won a round (game is decided, not just prob=1.0).
+ * A team with prob=1.0 might just be the only known team in a matchup awaiting
+ * a play-in opponent, which isn't the same as having won.
+ */
+function isRoundCompleted(team: Team, roundKey: string, state: BracketState): boolean {
+  const prob = team.probabilities[roundKey as keyof typeof team.probabilities];
+  if (prob !== 1.0) return false;
+
+  // Find a matchup where this team won in this round
+  const roundNumber = { round64: 1, round32: 2, sweet16: 3, elite8: 4, finalFour: 5, champion: 6 }[roundKey] ?? 0;
+  for (const [, matchup] of state.matchups) {
+    if (matchup.roundNumber !== roundNumber) continue;
+    if (!matchup.winner) continue;
+    const winnerTeam = matchup.winner === 'top' ? matchup.topTeam : matchup.bottomTeam;
+    if (winnerTeam?.id === team.id) return true;
+  }
+  return false;
 }
 
 function formatProb(value: number): string {
@@ -97,7 +111,7 @@ export function TableView({ state, onTeamClick }: TableViewProps) {
                   <td className={styles.tdRating}>{team.rating.toFixed(1)}</td>
                   {ROUND_COLUMNS.map((col) => {
                     const prob = team.probabilities[col.key];
-                    const completed = isRoundCompleted(team, col.key);
+                    const completed = isRoundCompleted(team, col.key, state);
                     return (
                       <td
                         key={col.key}

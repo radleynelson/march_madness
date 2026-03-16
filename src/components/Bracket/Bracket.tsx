@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { BracketState, RegionName, Matchup as MatchupType } from '../../types/bracket';
 import { Region } from './Region';
 import { FinalFour } from './FinalFour';
@@ -30,16 +30,47 @@ export function Bracket({ state, onUserAdvance }: BracketProps) {
   const { matchups, regionMatchupIds, finalFourMatchupIds, championshipMatchupId, firstFourMatchupIds } = state;
   const [activeTab, setActiveTab] = useState<BracketTab>('East');
   const [isMedium, setIsMedium] = useState(false);
+  const [scale, setScale] = useState(1);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const bracketRef = useRef<HTMLDivElement>(null);
 
   // Use tabbed layout when screen is too narrow for the full grid
   useEffect(() => {
     const check = () => {
-      setIsMedium(window.innerWidth < 1400);
+      setIsMedium(window.innerWidth < 900);
     };
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  // Auto-scale the full bracket grid to fit the container (minus padding)
+  const updateScale = useCallback(() => {
+    if (isMedium || !wrapperRef.current || !bracketRef.current) return;
+    // clientWidth includes padding, so subtract it to get usable space
+    const style = getComputedStyle(wrapperRef.current);
+    const paddingLeft = parseFloat(style.paddingLeft) || 0;
+    const paddingRight = parseFloat(style.paddingRight) || 0;
+    const availableWidth = wrapperRef.current.clientWidth - paddingLeft - paddingRight;
+    const bracketWidth = bracketRef.current.scrollWidth;
+    if (bracketWidth > availableWidth) {
+      setScale(availableWidth / bracketWidth);
+    } else {
+      setScale(1);
+    }
+  }, [isMedium]);
+
+  useEffect(() => {
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, [updateScale]);
+
+  // Re-measure after initial render when bracket content is laid out
+  useEffect(() => {
+    const id = requestAnimationFrame(updateScale);
+    return () => cancelAnimationFrame(id);
+  });
 
   // Get region matchups
   const getRegionMatchups = (region: RegionName): MatchupType[] => {
@@ -117,34 +148,49 @@ export function Bracket({ state, onUserAdvance }: BracketProps) {
     );
   }
 
-  // ── FULL GRID LAYOUT (large screens >1400px) ──
+  // ── FULL GRID LAYOUT (large screens) with auto-scale ──
+  const bracketHeight = bracketRef.current?.scrollHeight ?? 0;
+
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} ref={wrapperRef} style={{ overflow: 'hidden' }}>
       {firstFourSection}
 
-      <div className={styles.bracket}>
-        <div className={styles.regionTopLeft}>
-          <Region name="East" matchups={getRegionMatchups('East')} />
-        </div>
+      <div
+        style={{
+          height: scale < 1 ? `${bracketHeight * scale}px` : undefined,
+        }}
+      >
+        <div
+          className={styles.bracket}
+          ref={bracketRef}
+          style={scale < 1 ? {
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+          } : undefined}
+        >
+          <div className={styles.regionTopLeft}>
+            <Region name="East" matchups={getRegionMatchups('East')} />
+          </div>
 
-        <div className={styles.center}>
-          <FinalFour
-            semifinal1={semifinal1}
-            semifinal2={semifinal2}
-            championship={championship}
-          />
-        </div>
+          <div className={styles.center}>
+            <FinalFour
+              semifinal1={semifinal1}
+              semifinal2={semifinal2}
+              championship={championship}
+            />
+          </div>
 
-        <div className={styles.regionTopRight}>
-          <Region name="West" matchups={getRegionMatchups('West')} reversed />
-        </div>
+          <div className={styles.regionTopRight}>
+            <Region name="West" matchups={getRegionMatchups('West')} reversed />
+          </div>
 
-        <div className={styles.regionBottomLeft}>
-          <Region name="South" matchups={getRegionMatchups('South')} />
-        </div>
+          <div className={styles.regionBottomLeft}>
+            <Region name="South" matchups={getRegionMatchups('South')} />
+          </div>
 
-        <div className={styles.regionBottomRight}>
-          <Region name="Midwest" matchups={getRegionMatchups('Midwest')} reversed />
+          <div className={styles.regionBottomRight}>
+            <Region name="Midwest" matchups={getRegionMatchups('Midwest')} reversed />
+          </div>
         </div>
       </div>
     </div>
