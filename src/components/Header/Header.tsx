@@ -8,9 +8,11 @@ interface HeaderProps {
   onOpenSettings?: () => void;
   onOpenBracketFill?: () => void;
   aiEnabled?: boolean;
+  view?: 'bracket' | 'table';
+  onSetView?: (v: 'bracket' | 'table') => void;
 }
 
-export function Header({ state, hasUserPicks, onClearPicks, onOpenSettings, onOpenBracketFill, aiEnabled }: HeaderProps) {
+export function Header({ state, hasUserPicks, onClearPicks, onOpenSettings, onOpenBracketFill, aiEnabled, view, onSetView }: HeaderProps) {
   const { isLive, lastUpdated, teams } = state;
 
   // Find top championship favorites
@@ -44,6 +46,23 @@ export function Header({ state, hasUserPicks, onClearPicks, onOpenSettings, onOp
                 {i < teamsArray.length - 1 && <span className={styles.separator}>|</span>}
               </span>
             ))}
+          </div>
+        )}
+
+        {view && onSetView && (
+          <div className={styles.viewToggle}>
+            <button
+              className={`${styles.viewBtn} ${view === 'bracket' ? styles.viewBtnActive : ''}`}
+              onClick={() => onSetView('bracket')}
+            >
+              Bracket
+            </button>
+            <button
+              className={`${styles.viewBtn} ${view === 'table' ? styles.viewBtnActive : ''}`}
+              onClick={() => onSetView('table')}
+            >
+              Table
+            </button>
           </div>
         )}
 

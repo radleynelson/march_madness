@@ -1,0 +1,222 @@
+.wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px 32px;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+
+/* Hide scrollbar but keep scrolling */
+.tableContainer::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tableContainer::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-family);
+  font-size: 12px;
+  line-height: 1.4;
+  min-width: 820px;
+}
+
+/* Header */
+.headerRow {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.headerRow th {
+  background: #f7f7f8;
+  border-bottom: 2px solid #d0d0d0;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.thTeam {
+  min-width: 180px;
+  position: sticky;
+  left: 0;
+  z-index: 11;
+  background: #f7f7f8 !important;
+}
+
+.thRegion {
+  min-width: 70px;
+}
+
+.thRating {
+  min-width: 60px;
+  text-align: center !important;
+}
+
+.thRound {
+  text-align: center !important;
+  min-width: 56px;
+}
+
+.thWin {
+  border-left: 2px solid #d0d0d0;
+  min-width: 60px;
+  font-weight: 800;
+  color: #555;
+}
+
+/* Rows */
+.row {
+  cursor: pointer;
+  transition: background-color 100ms ease;
+}
+
+.row:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.015);
+}
+
+.row:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.rowEliminated {
+  opacity: 0.45;
+}
+
+.rowEliminated:hover {
+  opacity: 0.65;
+}
+
+/* Team cell */
+.tdTeam {
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  left: 0;
+  background: inherit;
+  z-index: 2;
+}
+
+.row:nth-child(even) .tdTeam {
+  background: #fafafb;
+}
+
+.row:hover .tdTeam {
+  background: #f3f3f5;
+}
+
+.logo {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.teamName {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.seed {
+  font-size: 10px;
+  color: #999;
+  font-weight: 500;
+}
+
+/* Region cell */
+.tdRegion {
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+
+/* Rating cell */
+.tdRating {
+  padding: 6px 10px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid #eee;
+}
+
+/* Probability cells */
+.tdProb {
+  padding: 6px 8px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+  transition: background-color 200ms ease;
+}
+
+.tdChamp {
+  border-left: 2px solid #d0d0d0;
+}
+
+.tdWin {
+  border-left: 2px solid #d0d0d0;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.checkmark {
+  color: #16a34a;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.dash {
+  color: #ccc;
+  font-weight: 400;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .wrapper {
+    padding: 0 8px 24px;
+  }
+
+  .table {
+    font-size: 11px;
+  }
+
+  .thTeam {
+    min-width: 140px;
+  }
+
+  .tdTeam {
+    padding: 5px 8px;
+    gap: 5px;
+  }
+
+  .teamName {
+    font-size: 11px;
+  }
+}

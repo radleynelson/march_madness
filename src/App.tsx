@@ -7,6 +7,8 @@ import { usePreviewState, PreviewContext } from './hooks/usePreview';
 import { useSettings, SettingsContext } from './hooks/useSettings';
 import { Header } from './components/Header/Header';
 import { Bracket } from './components/Bracket/Bracket';
+import { TableView } from './components/Table/TableView';
+import { GamesCarousel } from './components/Table/GamesCarousel';
 import { MatchupPreview } from './components/Preview/MatchupPreview';
 import { Settings } from './components/Settings/Settings';
 import { BracketFill } from './components/AI/BracketFill';
@@ -17,6 +19,7 @@ function AppContent() {
   const settingsState = useSettings();
   const [showSettings, setShowSettings] = useState(false);
   const [showBracketFill, setShowBracketFill] = useState(false);
+  const [view, setView] = useState<'bracket' | 'table'>('bracket');
 
   // Load Torvik ratings on mount
   const { error: ratingsError } = useTeamRatings({ state, dispatch });
@@ -46,6 +49,8 @@ function AppContent() {
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenBracketFill={() => setShowBracketFill(true)}
                 aiEnabled={settingsState.settings.aiEnabled}
+                view={view}
+                onSetView={setView}
               />
               {ratingsError && (
                 <div style={{
@@ -58,7 +63,14 @@ function AppContent() {
                   {ratingsError}
                 </div>
               )}
-              <Bracket state={state} onUserAdvance={userAdvance} />
+              {view === 'bracket' ? (
+                <Bracket state={state} onUserAdvance={userAdvance} />
+              ) : (
+                <>
+                  <GamesCarousel state={state} />
+                  <TableView state={state} />
+                </>
+              )}
               {previewMatchup && (
                 <MatchupPreview
                   matchup={previewMatchup}

@@ -1,0 +1,243 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 16px 0;
+}
+
+.header {
+  margin-bottom: 12px;
+}
+
+.dateSelect {
+  appearance: none;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 8px 32px 8px 12px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color var(--transition-fast);
+}
+
+.dateSelect:hover {
+  border-color: #aaa;
+}
+
+.dateSelect:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
+}
+
+/* Carousel track */
+.carouselTrack {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 0 16px;
+  scroll-behavior: smooth;
+}
+
+.carouselTrack::-webkit-scrollbar {
+  display: none;
+}
+
+.empty {
+  padding: 24px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Game card */
+.card {
+  flex: 0 0 250px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.cardLive {
+  border-color: var(--live-pulse);
+  border-width: 1.5px;
+}
+
+/* Status labels */
+.liveIndicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  background: var(--live-bg);
+  border-bottom: 1px solid #ffe0e0;
+}
+
+.liveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--live-pulse);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.liveText {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--live-pulse);
+  letter-spacing: 0.5px;
+}
+
+.clock {
+  font-size: 10px;
+  color: #888;
+  margin-left: auto;
+  font-family: var(--font-mono);
+}
+
+.finalLabel,
+.scheduledLabel {
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #eee;
+}
+
+.finalLabel {
+  color: var(--text-secondary);
+}
+
+.scheduledLabel {
+  color: #999;
+}
+
+/* Team rows inside card */
+.teamRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.teamRow:last-child {
+  border-bottom: none;
+}
+
+.teamInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.teamLogo {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.teamSeed {
+  font-size: 10px;
+  color: #999;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.teamCardName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tbd {
+  font-size: 11px;
+  color: #bbb;
+  font-style: italic;
+}
+
+.teamData {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.score {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  min-width: 28px;
+  text-align: right;
+}
+
+.scoreDash {
+  font-size: 13px;
+  color: #ccc;
+  min-width: 28px;
+  text-align: right;
+}
+
+.winProb {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f97316;
+  font-family: var(--font-mono);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* Won/lost styling */
+.teamWon .teamCardName {
+  font-weight: 800;
+}
+
+.teamWon .score {
+  font-weight: 900;
+}
+
+.teamLost .teamCardName {
+  color: var(--text-secondary);
+}
+
+.teamLost .score {
+  color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .container {
+    padding: 12px 8px 0;
+  }
+
+  .card {
+    flex: 0 0 220px;
+  }
+}
