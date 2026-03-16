@@ -166,9 +166,9 @@ export default async function handler(req, res) {
 
   let userPrompt = '';
   if (customPrompt) {
-    userPrompt += `USER'S INSTRUCTIONS (FOLLOW THESE — THEY TAKE PRIORITY):\n${customPrompt}\n\n---\n\n`;
+    userPrompt += `USER'S INSTRUCTIONS (YOU MUST FOLLOW THESE — THEY OVERRIDE EVERYTHING ELSE):\n${customPrompt}\n\nYou MUST use web search to research what the user is asking about before making picks. Do NOT just rely on the bracket data below. Actually search the web, find the relevant information, and make your picks based on what the user asked for. The bracket data below is only for knowing which teams are playing and the matchup IDs.\n\n---\n\n`;
   }
-  userPrompt += `Here is the current bracket state:\n\n${bracketContext}\n\nPlease fill in all remaining matchups following the user's instructions above (if any). Return ONLY the JSON object with picks and reasoning. In your reasoning, explain how you incorporated the user's instructions.`;
+  userPrompt += `Here is the current bracket state:\n\n${bracketContext}\n\nPlease fill in all remaining matchups${customPrompt ? ' based on the user\'s instructions above (use web search!)' : ''}. Return ONLY the JSON object with picks and reasoning.${customPrompt ? ' In your reasoning, explain what you found from web search and how you applied the user\'s criteria.' : ''}`;
 
   try {
     const apiMessages = [{ role: 'user', content: userPrompt }];
