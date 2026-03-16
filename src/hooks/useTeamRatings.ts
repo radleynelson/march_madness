@@ -13,7 +13,7 @@ interface UseTeamRatingsOptions {
  */
 export function useTeamRatings({ state, dispatch }: UseTeamRatingsOptions) {
   const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     if (loaded) return;

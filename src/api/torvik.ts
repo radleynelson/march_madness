@@ -3,7 +3,6 @@ import { parseTorvikData } from '../model/ratings';
 import { cache } from './cache';
 
 const TORVIK_URL = '/api/torvik/2026_team_results.json';
-const TORVIK_DIRECT_URL = 'https://barttorvik.com/2026_team_results.json';
 const CACHE_KEY = 'torvik-ratings';
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -18,26 +17,14 @@ export async function fetchTorvikRatings(): Promise<TorvikRatingsMap> {
 
   let data: unknown[][] | null = null;
 
-  // Try proxy first (works in dev with Vite proxy config)
+  // Use /api/torvik proxy (works in dev via Vite proxy, production via Vercel serverless)
   try {
     const response = await fetch(TORVIK_URL);
     if (response.ok) {
       data = await response.json();
     }
   } catch {
-    // Proxy not available, try direct
-  }
-
-  // Try direct URL
-  if (!data) {
-    try {
-      const response = await fetch(TORVIK_DIRECT_URL);
-      if (response.ok) {
-        data = await response.json();
-      }
-    } catch {
-      // Direct URL also failed
-    }
+    // Proxy not available
   }
 
   if (!data || !Array.isArray(data)) {
