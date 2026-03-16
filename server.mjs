@@ -69,7 +69,7 @@ function callCli(prompt) {
     const tmpFile = join(tmpDir, 'prompt.txt');
     writeFileSync(tmpFile, prompt, 'utf-8');
 
-    const child = spawn('claude', ['--print', '--output-format', 'json'], {
+    const child = spawn('claude', ['--print', '--output-format', 'json', '--allowedTools', 'WebSearch,WebFetch'], {
       stdio: ['pipe', 'pipe', 'pipe'],
       timeout: 180_000,
       env: { ...process.env },
@@ -290,8 +290,12 @@ async function handleFillBracket(req, res) {
   try {
     let rawContent;
 
+    console.log(`[fill-bracket] provider=${provider}, customPrompt=${customPrompt ? `"${customPrompt.slice(0, 80)}..."` : 'none'}`);
+    console.log(`[fill-bracket] userPrompt length: ${userPrompt.length} chars`);
+
     if (provider === 'cli') {
       const fullPrompt = `${FILL_BRACKET_SYSTEM}\n\n${userPrompt}`;
+      console.log(`[fill-bracket] CLI prompt first 500 chars:\n${fullPrompt.slice(0, 500)}`);
       const raw = await callCli(fullPrompt);
 
       // Try to parse CLI JSON wrapper
