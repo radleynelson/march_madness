@@ -122,7 +122,7 @@ export function useHoverState(state: BracketState) {
       // Small debounce on hover-in to prevent jumpiness during scrolling
       timerRef.current = setTimeout(() => {
         setHoveredTeamIdRaw(id);
-      }, 80);
+      }, 150);
     }
   }, []);
 
