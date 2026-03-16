@@ -1,0 +1,261 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e8e8e8;
+  background: #f3f0ff;
+  border-radius: 12px 12px 0 0;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #6d28d9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #999;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.closeBtn:hover {
+  background: #eee;
+  color: #333;
+}
+
+.body {
+  padding: 20px;
+}
+
+.description {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 16px;
+}
+
+.fillBtn {
+  width: 100%;
+  padding: 12px 20px;
+  background: #8b5cf6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.fillBtn:hover:not(:disabled) {
+  background: #7c3aed;
+}
+
+.fillBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading {
+  text-align: center;
+  padding: 30px 20px;
+  color: #8b5cf6;
+}
+
+.spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e9d5ff;
+  border-top-color: #8b5cf6;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-bottom: 12px;
+}
+
+.loadingText {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6d28d9;
+}
+
+.loadingSub {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.result {
+  margin-top: 16px;
+}
+
+.resultHeader {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.reasoning {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: #f8f8f8;
+  padding: 12px;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  margin-bottom: 16px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.applyBtn {
+  flex: 1;
+  padding: 10px 16px;
+  background: #22c55e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.applyBtn:hover {
+  background: #16a34a;
+}
+
+.saveBtn {
+  padding: 10px 16px;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.saveBtn:hover {
+  background: #2563eb;
+}
+
+.error {
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+/* History section */
+.historySection {
+  border-top: 1px solid #e8e8e8;
+  padding: 16px 20px;
+}
+
+.historyTitle {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #f8f8f8;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.historyItem:hover {
+  background: #f0f0f0;
+}
+
+.historyName {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.historyDate {
+  font-size: 11px;
+  color: #888;
+}
+
+.historyDelete {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+}
+
+.historyDelete:hover {
+  color: #dc2626;
+}
+
+.emptyHistory {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  padding: 12px;
+}

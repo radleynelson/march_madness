@@ -13,6 +13,10 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/torvik/, ''),
       },
+      '/api/ai': {
+        target: 'http://localhost:5198',
+        changeOrigin: true,
+      },
     },
   },
 })

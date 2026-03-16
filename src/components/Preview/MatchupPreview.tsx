@@ -5,6 +5,7 @@ import { TEAM_PROFILES } from '../../data/team-profiles';
 import { TEAM_ODDS, MATCHUP_LINES } from '../../data/team-odds';
 import type { MatchupLine } from '../../data/team-odds';
 import { winProbability } from '../../model/predictions';
+import { AIChat } from './AIChat';
 import styles from './MatchupPreview.module.css';
 
 interface MatchupPreviewProps {
@@ -205,6 +206,9 @@ export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
           <TeamColumn team={topTeam} prob={topWinProb} profile={topProfile} odds={topOdds} />
           <TeamColumn team={bottomTeam} prob={bottomWinProb} profile={bottomProfile} odds={bottomOdds} />
         </div>
+
+        {/* AI Chat - only shown when AI is enabled */}
+        <AIChat matchup={matchup} />
 
         {/* Footer */}
         <div className={styles.footer}>
