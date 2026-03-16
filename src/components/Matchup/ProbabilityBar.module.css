@@ -1,0 +1,53 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.bar {
+  flex: 1;
+  display: flex;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--prob-bar-bg);
+}
+
+.topFill {
+  background: var(--prob-top);
+  height: 100%;
+  transition: width var(--transition-slow);
+  border-radius: 2px 0 0 2px;
+}
+
+.bottomFill {
+  background: var(--prob-bottom);
+  height: 100%;
+  transition: width var(--transition-slow);
+  border-radius: 0 2px 2px 0;
+}
+
+.labelTop {
+  color: var(--prob-top);
+  min-width: 28px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.labelBottom {
+  color: var(--prob-bottom);
+  min-width: 28px;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.live .topFill {
+  background: linear-gradient(90deg, var(--prob-top), #60a5fa);
+}
+
+.live .bottomFill {
+  background: linear-gradient(90deg, #f87171, var(--prob-bottom));
+}

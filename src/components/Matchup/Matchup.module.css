@@ -1,0 +1,43 @@
+.matchup {
+  position: relative;
+  background: var(--bg-matchup);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  width: var(--matchup-width);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease, opacity 0.2s ease;
+  font-size: var(--font-size-base);
+  flex-shrink: 0;
+}
+
+.matchup:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #c0c0c0;
+}
+
+.live {
+  border-color: var(--live-pulse);
+  border-width: 1.5px;
+  background: var(--bg-matchup-live);
+  box-shadow: 0 0 8px rgba(229, 57, 53, 0.12);
+}
+
+.final {
+  border-color: var(--border-color);
+}
+
+.compact {
+  width: 160px;
+}
+
+/* Path highlighting — the highlighted team's matchup gets a thick colored border */
+.onPath {
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+  background: #fff;
+  border-width: 2.5px;
+}
+
+/* Dim non-path matchups when a team is hovered */
+.dimmed {
+  opacity: 0.18;
+}

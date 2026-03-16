@@ -1,0 +1,15 @@
+.round {
+  display: flex;
+  flex-direction: column;
+  padding: 0 3px;
+  min-width: fit-content;
+}
+
+.matchupWrapper {
+  flex-shrink: 0;
+}
+
+.spacer {
+  flex: 1;
+  min-height: 2px;
+}

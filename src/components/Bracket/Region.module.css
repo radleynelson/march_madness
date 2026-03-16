@@ -1,0 +1,33 @@
+.region {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header {
+  padding: 4px 12px;
+  border-bottom: 3px solid;
+  margin-bottom: 2px;
+}
+
+.name {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.rounds {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+}
+
+.roundsReversed {
+  flex-direction: row-reverse;
+}
+
+.reversed .header {
+  text-align: right;
+}

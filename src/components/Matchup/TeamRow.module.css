@@ -1,0 +1,120 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 5px;
+  font-size: var(--font-size-base);
+  line-height: 1.3;
+  transition: background var(--transition-fast);
+  min-height: 20px;
+}
+
+.row:hover {
+  background: var(--bg-matchup-hover);
+}
+
+.top {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.seed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: #f0f0f0;
+  flex-shrink: 0;
+}
+
+.logo {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+.name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 95px;
+  font-size: var(--font-size-sm);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.score {
+  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  min-width: 20px;
+  text-align: right;
+}
+
+.scoreWinner {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.probability {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  min-width: 26px;
+  text-align: right;
+}
+
+.eliminated {
+  opacity: 0.38;
+}
+
+.eliminated .name {
+  text-decoration: line-through;
+  text-decoration-color: rgba(0, 0, 0, 0.2);
+}
+
+.winner .name {
+  font-weight: 800;
+}
+
+.tbd {
+  opacity: 0.4;
+}
+
+.tbd .name {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.live .score {
+  color: var(--live-pulse);
+  font-weight: 800;
+}
+
+/* Team on the highlighted path — filled with team color via inline style */
+.pathHighlight {
+  font-weight: 700;
+}
+
+.pathHighlight .name {
+  font-weight: 900;
+  color: inherit;
+}
+
+.pathHighlight .seed {
+  color: inherit;
+}
+
+.pathHighlight .probability {
+  color: inherit;
+}

@@ -1,0 +1,88 @@
+.connector {
+  display: flex;
+  flex-direction: column;
+  width: 28px;
+  min-width: 28px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.pair {
+  display: flex;
+  flex-direction: column;
+  flex: 2;
+  position: relative;
+  transition: opacity 0.2s ease;
+}
+
+.topArm {
+  flex: 1;
+  border-bottom: 1.5px solid var(--line-color);
+  border-right: 1.5px solid var(--line-color);
+  transition: border-color 0.15s ease, border-width 0.15s ease;
+}
+
+.midLine {
+  width: 100%;
+  height: 0;
+  position: relative;
+}
+
+.bottomArm {
+  flex: 1;
+  border-top: 1.5px solid var(--line-color);
+  border-right: 1.5px solid var(--line-color);
+  transition: border-color 0.15s ease, border-width 0.15s ease;
+}
+
+/* Reversed (right-to-left regions) */
+.reversed .topArm {
+  border-right: none;
+  border-left: 1.5px solid var(--line-color);
+}
+
+.reversed .bottomArm {
+  border-right: none;
+  border-left: 1.5px solid var(--line-color);
+}
+
+/* Highlighted arm on the hovered team's path — thick colored line */
+.highlighted {
+  border-width: 4px !important;
+  z-index: 5;
+}
+
+/* The midline horizontal output — also highlight when path goes through */
+.midHighlighted {
+  /* nothing extra needed, prob label handles it */
+}
+
+/* Dim non-highlighted pairs when a path is active */
+.dimmed {
+  opacity: 0.15;
+}
+
+/* Probability label at connector junction */
+.probLabel {
+  position: absolute;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 900;
+  z-index: 15;
+  top: -11px;
+  left: calc(100% + 6px);
+  letter-spacing: -0.3px;
+  text-shadow:
+    -1px -1px 0 #fff,
+    1px -1px 0 #fff,
+    -1px 1px 0 #fff,
+    1px 1px 0 #fff,
+    0 0 6px rgba(255,255,255,0.9);
+}
+
+.probLabelReversed {
+  left: auto;
+  right: calc(100% + 6px);
+}
