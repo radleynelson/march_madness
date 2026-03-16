@@ -71,7 +71,7 @@ function callCli(prompt) {
 
     const child = spawn('claude', ['--print', '--output-format', 'json', '--allowedTools', 'WebSearch,WebFetch'], {
       stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 180_000,
+      timeout: 600_000, // 10 minutes — web search for 68 teams can be slow
       env: { ...process.env },
     });
 
