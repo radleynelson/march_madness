@@ -41,11 +41,12 @@
   position: relative;
 }
 
-/* FF probability label shown near semifinal */
+/* FF probability label shown near semifinal - always rendered, visibility toggled to prevent layout shifts */
 .ffProbLabel {
   font-size: 14px;
   font-weight: 900;
   text-align: center;
+  min-height: 20px;
   text-shadow:
     -1px -1px 0 #fff,
     1px -1px 0 #fff,
@@ -88,6 +89,15 @@
   font-size: var(--font-size-lg);
   font-weight: 900;
   color: #1a1a2e;
+}
+
+/* Fixed-size container for championship display to prevent layout shifts on hover */
+.champDisplayContainer {
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Hovered team championship display */

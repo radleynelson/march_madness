@@ -14,8 +14,12 @@ export function FinalFour({ semifinal1, semifinal2, championship }: FinalFourPro
   const hoveredTeam = teamPath?.team ?? null;
   const champProb = hoveredTeam ? hoveredTeam.probabilities.champion : 0;
   const ffProb = hoveredTeam ? hoveredTeam.probabilities.finalFour : 0;
-  const e8Prob = hoveredTeam ? hoveredTeam.probabilities.elite8 : 0;
   const pathColor = hoveredTeam?.primaryColor || '#333';
+
+  const showFF0 = hoveredTeam && ffProb > 0 && teamPath?.matchupIds.has('FF-0');
+  const showFF1 = hoveredTeam && ffProb > 0 && teamPath?.matchupIds.has('FF-1');
+  const showChampHover = hoveredTeam && champProb > 0;
+  const showChampWinner = !showChampHover && championship?.winner;
 
   return (
     <div className={styles.container}>
@@ -25,60 +29,67 @@ export function FinalFour({ semifinal1, semifinal2, championship }: FinalFourPro
       <div className={styles.bracket}>
         <div className={styles.semi}>
           {semifinal1 && <Matchup matchup={semifinal1} />}
-          {/* FF probability label */}
-          {hoveredTeam && ffProb > 0 && teamPath?.matchupIds.has('FF-0') && (
-            <div className={styles.ffProbLabel} style={{ color: pathColor }}>
-              {formatProb(ffProb)}
-            </div>
-          )}
+          {/* FF probability label - always rendered, visibility toggled */}
+          <div
+            className={styles.ffProbLabel}
+            style={{
+              color: pathColor,
+              visibility: showFF0 ? 'visible' : 'hidden',
+            }}
+          >
+            {showFF0 ? formatProb(ffProb) : '\u00A0'}
+          </div>
         </div>
         <div className={styles.championship}>
           <div className={styles.champLabel}>Championship</div>
           {championship && <Matchup matchup={championship} />}
 
-          {/* Show hovered team championship info */}
-          {hoveredTeam && champProb > 0 ? (
-            <div className={styles.champDisplay}>
-              <div className={styles.champDisplayLabel}>Chance of winning<br/>tournament</div>
-              <div
-                className={styles.champDisplayPct}
-                style={{ color: pathColor }}
-              >
-                {formatProb(champProb)}
+          {/* Championship display - fixed-size container, content swapped via visibility */}
+          <div className={styles.champDisplayContainer}>
+            {showChampHover ? (
+              <div className={styles.champDisplay}>
+                <div className={styles.champDisplayLabel}>Chance of winning<br/>tournament</div>
+                <div
+                  className={styles.champDisplayPct}
+                  style={{ color: pathColor }}
+                >
+                  {formatProb(champProb)}
+                </div>
+                <img
+                  className={styles.champDisplayLogo}
+                  src={hoveredTeam!.logoUrl}
+                  alt=""
+                  width={64}
+                  height={64}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+                <div className={styles.champDisplayTeam}>
+                  {hoveredTeam!.shortName}
+                </div>
               </div>
-              <img
-                className={styles.champDisplayLogo}
-                src={hoveredTeam.logoUrl}
-                alt=""
-                width={64}
-                height={64}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-              <div className={styles.champDisplayTeam}>
-                {hoveredTeam.shortName}
-              </div>
-            </div>
-          ) : (
-            /* Default champion display */
-            championship?.winner && (
+            ) : showChampWinner ? (
               <div className={styles.champion}>
                 <span className={styles.championIcon}>🏆</span>
                 <span className={styles.championName}>
-                  {championship.winner === 'top'
-                    ? championship.topTeam?.shortName
-                    : championship.bottomTeam?.shortName}
+                  {championship!.winner === 'top'
+                    ? championship!.topTeam?.shortName
+                    : championship!.bottomTeam?.shortName}
                 </span>
               </div>
-            )
-          )}
+            ) : null}
+          </div>
         </div>
         <div className={styles.semi}>
-          {/* FF probability label - above matchup so it's between championship and semifinal */}
-          {hoveredTeam && ffProb > 0 && teamPath?.matchupIds.has('FF-1') && (
-            <div className={styles.ffProbLabel} style={{ color: pathColor }}>
-              {formatProb(ffProb)}
-            </div>
-          )}
+          {/* FF probability label - always rendered, visibility toggled */}
+          <div
+            className={styles.ffProbLabel}
+            style={{
+              color: pathColor,
+              visibility: showFF1 ? 'visible' : 'hidden',
+            }}
+          >
+            {showFF1 ? formatProb(ffProb) : '\u00A0'}
+          </div>
           {semifinal2 && <Matchup matchup={semifinal2} />}
         </div>
       </div>
