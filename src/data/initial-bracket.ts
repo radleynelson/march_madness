@@ -21,13 +21,13 @@ const TEAM_COLORS: Record<string, string> = {
   '231': '#582C83',   // Furman - purple
   '57': '#0021A5',    // Florida - blue
   '2504': '#4F2D7F',  // Prairie View - purple
-  '228': '#653819',   // Lehigh - brown
-  '2294c': '#F56600', // Clemson - orange
+  '2329': '#653819',   // Lehigh - brown
+  '228': '#F56600',    // Clemson - orange
   '2294': '#FFCD00',  // Iowa - gold
   '238': '#866D4B',   // Vanderbilt - gold
   '2377': '#005CB9',  // McNeese - blue
   '158': '#E41C38',   // Nebraska - red
-  '2713': '#8B2332',  // Troy - maroon
+  '2653': '#8B2332',  // Troy - maroon
   '153': '#7BAFD4',   // North Carolina - carolina blue
   '2670': '#F8B800',  // VCU - gold
   '356': '#E84A27',   // Illinois - orange
@@ -37,11 +37,11 @@ const TEAM_COLORS: Record<string, string> = {
   '248': '#C8102E',   // Houston - red
   '70': '#B5A36A',    // Idaho - gold
   '12': '#CC0033',    // Arizona - red
-  '112617': '#00529B',// LIU - blue
-  '2907': '#00205B',  // Villanova - navy
+  '112358': '#00529B',// LIU - blue
+  '222': '#00205B',   // Villanova - navy
   '328': '#00263A',   // Utah State - navy
   '275': '#C5050C',   // Wisconsin - red
-  '2314': '#330072',  // High Point - purple
+  '2272': '#330072',  // High Point - purple
   '8': '#9D2235',     // Arkansas - red
   '62': '#024731',    // Hawaii - green
   '252': '#002E5D',   // BYU - navy
@@ -127,13 +127,13 @@ const southTeams: Team[] = [
   team('57', 'Florida', 'FLA', 1, 'South', '26-7', 'Florida Gators'),
   // 16 seed is First Four winner (Prairie View A&M / Lehigh) - placeholder
   team('2504', 'Prairie View', 'PVAM', 16, 'South', '', 'Prairie View A&M Panthers'),
-  team('228', 'Lehigh', 'LEH', 16, 'South', '', 'Lehigh Mountain Hawks'),
-  team('2294c', 'Clemson', 'CLEM', 8, 'South', '', 'Clemson Tigers'),
+  team('2329', 'Lehigh', 'LEH', 16, 'South', '', 'Lehigh Mountain Hawks'),
+  team('228', 'Clemson', 'CLEM', 8, 'South', '', 'Clemson Tigers'),
   team('2294', 'Iowa', 'IOWA', 9, 'South', '', 'Iowa Hawkeyes'),
   team('238', 'Vanderbilt', 'VAN', 5, 'South', '26-8', 'Vanderbilt Commodores'),
   team('2377', 'McNeese', 'MCNS', 12, 'South', '', 'McNeese Cowboys'),
   team('158', 'Nebraska', 'NEB', 4, 'South', '26-6', 'Nebraska Cornhuskers'),
-  team('2713', 'Troy', 'TROY', 13, 'South', '', 'Troy Trojans'),
+  team('2653', 'Troy', 'TROY', 13, 'South', '', 'Troy Trojans'),
   team('153', 'North Carolina', 'UNC', 6, 'South', '', 'North Carolina Tar Heels'),
   team('2670', 'VCU', 'VCU', 11, 'South', '', 'VCU Rams'),
   team('356', 'Illinois', 'ILL', 3, 'South', '24-8', 'Illinois Fighting Illini'),
@@ -149,11 +149,11 @@ const southTeams: Team[] = [
 // ============================================================================
 const westTeams: Team[] = [
   team('12', 'Arizona', 'ARIZ', 1, 'West', '32-2', 'Arizona Wildcats'),
-  team('112617', 'LIU', 'LIU', 16, 'West', '', 'LIU Sharks'),
-  team('2907', 'Villanova', 'NOVA', 8, 'West', '', 'Villanova Wildcats'),
+  team('112358', 'LIU', 'LIU', 16, 'West', '', 'LIU Sharks'),
+  team('222', 'Villanova', 'NOVA', 8, 'West', '', 'Villanova Wildcats'),
   team('328', 'Utah State', 'USU', 9, 'West', '', 'Utah State Aggies'),
   team('275', 'Wisconsin', 'WIS', 5, 'West', '', 'Wisconsin Badgers'),
-  team('2314', 'High Point', 'HPU', 12, 'West', '', 'High Point Panthers'),
+  team('2272', 'High Point', 'HPU', 12, 'West', '', 'High Point Panthers'),
   team('8', 'Arkansas', 'ARK', 4, 'West', '26-8', 'Arkansas Razorbacks'),
   team('62', 'Hawaii', 'HAW', 13, 'West', '', 'Hawaii Rainbow Warriors'),
   team('252', 'BYU', 'BYU', 6, 'West', '', 'BYU Cougars'),
