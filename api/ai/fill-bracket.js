@@ -172,7 +172,18 @@ export default async function handler(req, res) {
 
   try {
     const apiMessages = [{ role: 'user', content: userPrompt }];
-    const apiResponse = await callAnthropicApi(apiMessages, FILL_BRACKET_SYSTEM, apiKey);
+    const apiSystemPrompt = customPrompt
+      ? `You are an NCAA March Madness bracket analyst. The user has given you specific instructions for how to pick winners — YOU MUST FOLLOW THEM EXACTLY, even if they seem unusual. Use web search to research what the user is asking about.
+
+Respond ONLY with a JSON object in this exact format:
+{
+  "picks": { "MATCHUP-ID": "top" or "bottom", ... },
+  "reasoning": "Explain how you applied the user's criteria based on your web search findings."
+}
+
+Fill in ALL undecided matchups. "top" = first-listed team wins, "bottom" = second-listed team wins.`
+      : FILL_BRACKET_SYSTEM;
+    const apiResponse = await callAnthropicApi(apiMessages, apiSystemPrompt, apiKey);
     const rawContent = extractTextFromApiResponse(apiResponse);
 
     // Attempt to parse the JSON from Claude's response

@@ -294,7 +294,20 @@ async function handleFillBracket(req, res) {
     console.log(`[fill-bracket] userPrompt length: ${userPrompt.length} chars`);
 
     if (provider === 'cli') {
-      const fullPrompt = `${FILL_BRACKET_SYSTEM}\n\n${userPrompt}`;
+      // When user has custom instructions, use a modified system prompt that defers to them
+      const systemPrompt = customPrompt
+        ? `You are an NCAA March Madness bracket analyst. The user has given you specific instructions for how to pick winners — YOU MUST FOLLOW THEM EXACTLY, even if they seem unusual. Use web search to research what the user is asking about.
+
+Respond ONLY with a JSON object in this exact format:
+{
+  "picks": { "MATCHUP-ID": "top" or "bottom", ... },
+  "reasoning": "Explain how you applied the user's criteria based on your web search findings."
+}
+
+Fill in ALL undecided matchups. "top" = first-listed team wins, "bottom" = second-listed team wins.`
+        : FILL_BRACKET_SYSTEM;
+
+      const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
       console.log(`[fill-bracket] CLI prompt first 500 chars:\n${fullPrompt.slice(0, 500)}`);
       const raw = await callCli(fullPrompt);
 
@@ -312,7 +325,18 @@ async function handleFillBracket(req, res) {
       }
 
       const apiMessages = [{ role: 'user', content: userPrompt }];
-      const apiResponse = await callAnthropicApi(apiMessages, FILL_BRACKET_SYSTEM, apiKey);
+      const apiSystemPrompt = customPrompt
+        ? `You are an NCAA March Madness bracket analyst. The user has given you specific instructions for how to pick winners — YOU MUST FOLLOW THEM EXACTLY, even if they seem unusual. Use web search to research what the user is asking about.
+
+Respond ONLY with a JSON object in this exact format:
+{
+  "picks": { "MATCHUP-ID": "top" or "bottom", ... },
+  "reasoning": "Explain how you applied the user's criteria based on your web search findings."
+}
+
+Fill in ALL undecided matchups. "top" = first-listed team wins, "bottom" = second-listed team wins.`
+        : FILL_BRACKET_SYSTEM;
+      const apiResponse = await callAnthropicApi(apiMessages, apiSystemPrompt, apiKey);
       rawContent = extractTextFromApiResponse(apiResponse);
     }
 
