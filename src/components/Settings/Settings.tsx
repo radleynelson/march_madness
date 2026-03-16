@@ -80,9 +80,9 @@ export function Settings({ onClose }: SettingsProps) {
               )}
             </div>
             <div className={styles.hint}>
-              Enter your API key from console.anthropic.com to enable AI features.
+              Enter your API key from console.anthropic.com to enable AI features. Your key is only sent directly to Anthropic.
               {settings.cliAvailable && ' Since Claude CLI is available, AI features will use your Max subscription by default.'}
-              {' '}Your key is stored in localStorage and only sent to Anthropic.
+              {' '}By entering an API key, you acknowledge that you are responsible for all usage and billing associated with your Anthropic account.
             </div>
           </div>
         </div>
