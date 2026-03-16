@@ -189,12 +189,17 @@ export function useLiveScores({ state, dispatch, enabled = true }: UseLiveScores
 
       if (pastAndTodayDates.length === 0) return;
 
-      // Process each day sequentially (order matters for winner propagation)
+      // Process each day sequentially (order matters for winner propagation).
+      // The setTimeout(0) between iterations forces a macrotask boundary so React
+      // flushes pending dispatches and updates matchupsRef before the next day's
+      // games try to match against later-round matchup slots.
       let anyLive = false;
       let anyScheduled = false;
       for (const date of pastAndTodayDates) {
         try {
           const result = await processDayScores(date);
+          // Yield to let React flush state updates (winners placed in next-round slots)
+          await new Promise(r => setTimeout(r, 0));
           if (date === today) {
             anyLive = result.anyLive;
             anyScheduled = result.anyScheduled;
