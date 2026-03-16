@@ -11,8 +11,47 @@ interface UseLiveScoresOptions {
 }
 
 /**
+ * Once we know which ESPN competitor is "top" (our bracket's top slot)
+ * and which is "bottom", build the ScoreUpdate with correct score/winner mapping.
+ */
+function buildMatchedUpdate(
+  update: ScoreUpdate,
+  matchupId: string,
+  competitors: EspnCompetitor[],
+  comp0IsTop: boolean,
+): ScoreUpdate {
+  const topScore = comp0IsTop ? parseInt(competitors[0].score, 10) : parseInt(competitors[1].score, 10);
+  const bottomScore = comp0IsTop ? parseInt(competitors[1].score, 10) : parseInt(competitors[0].score, 10);
+
+  let winner: 'top' | 'bottom' | null = null;
+  if (update.status === 'final') {
+    if (comp0IsTop) {
+      winner = competitors[0].winner ? 'top' : 'bottom';
+    } else {
+      winner = competitors[1].winner ? 'top' : 'bottom';
+    }
+  }
+
+  return {
+    espnEventId: update.espnEventId,
+    matchupId,
+    status: update.status,
+    topScore: isNaN(topScore) ? null : topScore,
+    bottomScore: isNaN(bottomScore) ? null : bottomScore,
+    clock: update.clock,
+    period: update.period,
+    liveTopWinProbability: update.liveTopWinProbability,
+    winner,
+  };
+}
+
+/**
  * Match ESPN game events to bracket matchups and produce ScoreUpdates.
- * Uses two-tier matching: espnEventId first, then fuzzy team name matching.
+ *
+ * Three-tier matching strategy:
+ *   1. espnEventId — cached from a prior match, instant and exact
+ *   2. ESPN team ID — compares competitor.team.id to our team.id (both are ESPN IDs)
+ *   3. Fuzzy team name — substring match on shortName (fallback)
  */
 function matchGamesToUpdates(
   rawUpdates: (ScoreUpdate & { _competitors?: EspnCompetitor[] })[],
@@ -22,9 +61,9 @@ function matchGamesToUpdates(
 
   for (const update of rawUpdates) {
     const competitors = update._competitors;
-    if (!competitors) continue;
+    if (!competitors || competitors.length < 2) continue;
 
-    // Tier 1: Match by espnEventId (fast, exact)
+    // Tier 1: Match by espnEventId (cached from a prior match)
     let matched = false;
     for (const [matchupId, matchup] of matchups) {
       if (matchup.espnEventId === update.espnEventId) {
@@ -33,53 +72,52 @@ function matchGamesToUpdates(
         break;
       }
     }
-
     if (matched) continue;
 
-    // Tier 2: Match by team names (fuzzy, first-time only)
+    const espnId0 = competitors[0].team.id;
+    const espnId1 = competitors[1].team.id;
+
+    // Tier 2: Match by ESPN team IDs (deterministic, no ambiguity)
+    for (const [matchupId, matchup] of matchups) {
+      if (matchup.espnEventId) continue; // Already linked to a different event
+
+      const topId = matchup.topTeam?.id;
+      const bottomId = matchup.bottomTeam?.id;
+      if (!topId && !bottomId) continue;
+
+      // Check if both ESPN competitors match our top/bottom teams (in either order)
+      const comp0IsTop = espnId0 === topId;
+      const comp0IsBottom = espnId0 === bottomId;
+      const comp1IsTop = espnId1 === topId;
+      const comp1IsBottom = espnId1 === bottomId;
+
+      if ((comp0IsTop && comp1IsBottom) || (comp0IsBottom && comp1IsTop)) {
+        matchedUpdates.push(buildMatchedUpdate(update, matchupId, competitors, comp0IsTop));
+        matched = true;
+        break;
+      }
+    }
+    if (matched) continue;
+
+    // Tier 3: Fuzzy team name match (fallback for edge cases)
     const espnTeamNames = competitors.map(c =>
       (c.team.shortDisplayName ?? c.team.location ?? '').toLowerCase()
     );
 
     for (const [matchupId, matchup] of matchups) {
-      if (matchup.espnEventId) continue; // Already matched to a different event
+      if (matchup.espnEventId) continue;
 
       const topName = matchup.topTeam?.shortName?.toLowerCase() ?? '';
       const bottomName = matchup.bottomTeam?.shortName?.toLowerCase() ?? '';
-
       if (!topName && !bottomName) continue;
 
       const topMatch = espnTeamNames.some(n => n.includes(topName) || topName.includes(n));
       const bottomMatch = espnTeamNames.some(n => n.includes(bottomName) || bottomName.includes(n));
 
       if (topMatch && bottomMatch) {
-        // Determine which ESPN competitor is "top" and which is "bottom"
         const comp0Name = (competitors[0].team.shortDisplayName ?? competitors[0].team.location ?? '').toLowerCase();
         const comp0IsTop = comp0Name.includes(topName) || topName.includes(comp0Name);
-
-        const topScore = comp0IsTop ? parseInt(competitors[0].score, 10) : parseInt(competitors[1].score, 10);
-        const bottomScore = comp0IsTop ? parseInt(competitors[1].score, 10) : parseInt(competitors[0].score, 10);
-
-        let winner: 'top' | 'bottom' | null = null;
-        if (update.status === 'final') {
-          if (comp0IsTop) {
-            winner = competitors[0].winner ? 'top' : 'bottom';
-          } else {
-            winner = competitors[1].winner ? 'top' : 'bottom';
-          }
-        }
-
-        matchedUpdates.push({
-          espnEventId: update.espnEventId,
-          matchupId,
-          status: update.status,
-          topScore: isNaN(topScore) ? null : topScore,
-          bottomScore: isNaN(bottomScore) ? null : bottomScore,
-          clock: update.clock,
-          period: update.period,
-          liveTopWinProbability: update.liveTopWinProbability,
-          winner,
-        });
+        matchedUpdates.push(buildMatchedUpdate(update, matchupId, competitors, comp0IsTop));
         break;
       }
     }
