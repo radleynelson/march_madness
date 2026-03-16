@@ -6,11 +6,12 @@
 /* First Four Section */
 .firstFour {
   max-width: 100%;
-  margin: 0 auto 12px;
-  padding: 10px 16px;
+  margin: 0 auto 20px;
+  padding: 10px 16px 18px;
   background: var(--bg-secondary);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
+  overflow: visible;
 }
 
 .firstFourHeader {
