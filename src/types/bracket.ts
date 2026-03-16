@@ -91,6 +91,7 @@ export type BracketAction =
   | { type: 'UPDATE_SCORES'; updates: ScoreUpdate[] }
   | { type: 'ADVANCE_WINNER'; matchupId: string; winner: 'top' | 'bottom' }
   | { type: 'USER_ADVANCE'; matchupId: string; winner: 'top' | 'bottom' }
+  | { type: 'APPLY_SIMULATION'; picks: Record<string, 'top' | 'bottom'> }
   | { type: 'CLEAR_USER_PICKS' }
   | { type: 'RECALCULATE_PREDICTIONS' };
 

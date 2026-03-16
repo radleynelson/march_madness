@@ -222,6 +222,56 @@ function bracketReducer(state: BracketState, action: BracketAction): BracketStat
       return calculateAllProbabilities(newState);
     }
 
+    case 'APPLY_SIMULATION': {
+      // Apply all picks atomically in round order within a single reducer call.
+      // This avoids React batching issues where later-round picks fire before
+      // earlier-round winners have been placed.
+      const newMatchups = new Map(state.matchups);
+      const newUserPicks = new Set(state.userPicks);
+
+      // Sort picks by round order so propagation works correctly
+      const roundPriority: Record<string, number> = {
+        'FF-PLAY': 0, 'R64': 1, 'R32': 2, 'S16': 3, 'E8': 4, 'FF-': 5, 'CHAMP': 6,
+      };
+      const sortedPicks = Object.entries(action.picks).sort((a, b) => {
+        const aPri = Object.entries(roundPriority).find(([k]) => a[0].includes(k))?.[1] ?? 99;
+        const bPri = Object.entries(roundPriority).find(([k]) => b[0].includes(k))?.[1] ?? 99;
+        return aPri - bPri;
+      });
+
+      for (const [matchupId, winner] of sortedPicks) {
+        const matchup = newMatchups.get(matchupId);
+        if (!matchup) continue;
+        if (matchup.status === 'final') continue; // Don't override real results
+        if (!matchup.topTeam && !matchup.bottomTeam) continue; // Skip if no teams yet
+
+        // For play-in and R64 games, both teams should exist
+        // For later rounds, the team may have just been placed by an earlier pick in this loop
+        const winnerTeam = winner === 'top' ? matchup.topTeam : matchup.bottomTeam;
+        if (!winnerTeam) continue;
+
+        // Set winner
+        newMatchups.set(matchupId, { ...newMatchups.get(matchupId)!, winner });
+
+        // Propagate to next matchup
+        if (matchup.nextMatchupId) {
+          const nextMatchup = newMatchups.get(matchup.nextMatchupId);
+          if (nextMatchup) {
+            const goesToTop = nextMatchup.topSourceMatchupId === matchupId;
+            newMatchups.set(matchup.nextMatchupId, {
+              ...nextMatchup,
+              ...(goesToTop ? { topTeam: winnerTeam } : { bottomTeam: winnerTeam }),
+            });
+          }
+        }
+
+        newUserPicks.add(matchupId);
+      }
+
+      const newState = { ...state, matchups: newMatchups, userPicks: newUserPicks };
+      return calculateAllProbabilities(newState);
+    }
+
     case 'CLEAR_USER_PICKS': {
       if (state.userPicks.size === 0) return state;
 

@@ -102,22 +102,10 @@ export function BracketFill({ onClose }: BracketFillProps) {
 
   const handleApply = useCallback(() => {
     if (!result) return;
-    // Apply picks in round order to ensure proper propagation
-    const roundOrder = ['FF-PLAY', 'R64', 'R32', 'S16', 'E8', 'FF-', 'CHAMP'];
-    const sortedPicks = Object.entries(result.picks).sort((a, b) => {
-      const aOrder = roundOrder.findIndex(r => a[0].includes(r));
-      const bOrder = roundOrder.findIndex(r => b[0].includes(r));
-      return aOrder - bOrder;
-    });
-
-    for (const [matchupId, winner] of sortedPicks) {
-      const matchup = state.matchups.get(matchupId);
-      if (matchup && !matchup.winner && matchup.topTeam && matchup.bottomTeam) {
-        dispatch({ type: 'USER_ADVANCE', matchupId, winner });
-      }
-    }
+    // Apply all picks atomically in a single reducer call
+    dispatch({ type: 'APPLY_SIMULATION', picks: result.picks });
     onClose();
-  }, [result, state.matchups, dispatch, onClose]);
+  }, [result, dispatch, onClose]);
 
   const handleSave = useCallback(async () => {
     if (!result) return;
@@ -133,7 +121,7 @@ export function BracketFill({ onClose }: BracketFillProps) {
   }, [result]);
 
   const handleLoadSimulation = useCallback((sim: Simulation) => {
-    setResult({ picks: sim.picks, reasoning: sim.reasoning });
+    setResult({ picks: sim.picks, reasoning: sim.reasoning || 'No reasoning saved for this simulation.' });
   }, []);
 
   const handleDeleteSimulation = useCallback(async (id: string, e: React.MouseEvent) => {
@@ -191,11 +179,23 @@ export function BracketFill({ onClose }: BracketFillProps) {
 
           {result && (
             <div className={styles.result}>
-              <div className={styles.resultHeader}>Claude's Reasoning</div>
+              <div className={styles.resultHeader}>Claude's Analysis</div>
               <div className={styles.reasoning}>{result.reasoning}</div>
 
               <div className={styles.resultHeader}>
                 {Object.keys(result.picks).length} picks ready
+                {' \u2014 '}
+                {(() => {
+                  const counts: Record<string, number> = {};
+                  for (const id of Object.keys(result.picks)) {
+                    const round = id.includes('FF-PLAY') ? 'First Four' :
+                      id.includes('R64') ? 'R64' : id.includes('R32') ? 'R32' :
+                      id.includes('S16') ? 'Sweet 16' : id.includes('E8') ? 'Elite 8' :
+                      id.includes('FF-') ? 'Final Four' : id === 'CHAMP' ? 'Championship' : 'Other';
+                    counts[round] = (counts[round] ?? 0) + 1;
+                  }
+                  return Object.entries(counts).map(([r, c]) => `${c} ${r}`).join(', ');
+                })()}
               </div>
 
               <div className={styles.actions}>

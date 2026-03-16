@@ -1,8 +1,9 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { Matchup as MatchupType } from '../../types/bracket';
 import { useHoverContext } from '../../hooks/useHoverState';
 import { usePreviewContext } from '../../hooks/usePreview';
 import { useBracketContext } from '../../hooks/useBracketState';
+import { winProbability } from '../../model/predictions';
 import { TeamRow } from './TeamRow';
 import { ProbabilityBar } from './ProbabilityBar';
 import { LiveIndicator } from './LiveIndicator';
@@ -66,10 +67,30 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
   const topIsWinner = winner === 'top' ? true : winner === 'bottom' ? false : null;
   const bottomIsWinner = winner === 'bottom' ? true : winner === 'top' ? false : null;
 
-  // Use live win probability if available, otherwise use predicted
+  // Compute weighted probability when one team is TBD (from a play-in game).
+  // Instead of showing 50/50, estimate odds vs the expected play-in winner.
+  const adjustedTopProb = useMemo(() => {
+    // If both teams exist or neither does, use model probability as-is
+    if ((topTeam && bottomTeam) || (!topTeam && !bottomTeam)) return topWinProbability;
+    // If one team is TBD due to a source play-in matchup, compute weighted prob
+    const knownTeam = topTeam ?? bottomTeam;
+    const knownIsTop = !!topTeam;
+    const sourceId = knownIsTop ? matchup.bottomSourceMatchupId : matchup.topSourceMatchupId;
+    if (!sourceId || !knownTeam) return topWinProbability;
+    const sourceMatchup = state.matchups.get(sourceId);
+    if (!sourceMatchup?.topTeam || !sourceMatchup?.bottomTeam) return topWinProbability;
+    // Weighted probability: P(known beats source.top) * P(source.top wins) + P(known beats source.bottom) * P(source.bottom wins)
+    const pSourceTop = sourceMatchup.topWinProbability;
+    const pKnownVsSourceTop = winProbability(knownTeam.rating, sourceMatchup.topTeam.rating);
+    const pKnownVsSourceBot = winProbability(knownTeam.rating, sourceMatchup.bottomTeam.rating);
+    const pKnownWins = pKnownVsSourceTop * pSourceTop + pKnownVsSourceBot * (1 - pSourceTop);
+    return knownIsTop ? pKnownWins : 1 - pKnownWins;
+  }, [topTeam, bottomTeam, topWinProbability, matchup, state.matchups]);
+
+  // Use live win probability if available, otherwise use predicted (or adjusted)
   const displayTopProb = isLive && liveTopWinProbability !== null
     ? liveTopWinProbability
-    : topWinProbability;
+    : adjustedTopProb;
   const displayBottomProb = 1 - displayTopProb;
 
   // Path highlighting
@@ -94,7 +115,7 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
           score={status !== 'scheduled' ? topScore : null}
           isWinner={topIsWinner}
           isLive={isLive}
-          probability={isScheduled && !winner ? topWinProbability : undefined}
+          probability={isScheduled && !winner ? adjustedTopProb : undefined}
           position="top"
           isOnPath={isOnPath && pathSlot === 'top'}
           pathColor={isOnPath && pathSlot === 'top' ? pathColor : undefined}
@@ -124,7 +145,7 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
           score={status !== 'scheduled' ? bottomScore : null}
           isWinner={bottomIsWinner}
           isLive={isLive}
-          probability={isScheduled && !winner ? bottomWinProbability : undefined}
+          probability={isScheduled && !winner ? (1 - adjustedTopProb) : undefined}
           position="bottom"
           isOnPath={isOnPath && pathSlot === 'bottom'}
           pathColor={isOnPath && pathSlot === 'bottom' ? pathColor : undefined}
@@ -132,8 +153,8 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
         />
       </div>
 
-      {/* Preview button */}
-      {!compact && topTeam && bottomTeam && (
+      {/* Preview button - shown on all matchups with both teams */}
+      {topTeam && bottomTeam && (
         <button
           className={styles.previewBtn}
           onClick={handlePreviewClick}
