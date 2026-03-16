@@ -261,7 +261,8 @@ Rules:
 - Each key in "picks" is a matchup ID.
 - Each value is either "top" (the higher-seeded / first-listed team wins) or "bottom" (the lower-seeded / second-listed team wins).
 - Fill in ALL matchups that have not yet been decided.
-- Base your picks on team strength, historical performance, matchup dynamics, and any relevant data from the current season.`;
+- Base your picks on team strength, historical performance, matchup dynamics, and any relevant data from the current season.
+- IMPORTANT: If the user provides additional instructions, you MUST follow them. They take priority over default analysis. For example, if the user says "favor upsets" or "pick based on NIL budget", adjust your picks accordingly and explain how you incorporated their instructions in your reasoning.`;
 
 async function handleFillBracket(req, res) {
   let body;
@@ -280,11 +281,11 @@ async function handleFillBracket(req, res) {
     return sendJson(res, 400, { error: "provider must be 'cli' or 'api'" });
   }
 
-  let userPrompt = `Here is the current bracket state:\n\n${bracketContext}\n\n`;
+  let userPrompt = '';
   if (customPrompt) {
-    userPrompt += `ADDITIONAL INSTRUCTIONS FROM USER:\n${customPrompt}\n\n`;
+    userPrompt += `USER'S INSTRUCTIONS (FOLLOW THESE — THEY TAKE PRIORITY):\n${customPrompt}\n\n---\n\n`;
   }
-  userPrompt += `Please fill in all remaining matchups. Return ONLY the JSON object with picks and reasoning.`;
+  userPrompt += `Here is the current bracket state:\n\n${bracketContext}\n\nPlease fill in all remaining matchups following the user's instructions above (if any). Return ONLY the JSON object with picks and reasoning. In your reasoning, explain how you incorporated the user's instructions.`;
 
   try {
     let rawContent;
