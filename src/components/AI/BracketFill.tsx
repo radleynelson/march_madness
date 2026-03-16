@@ -17,6 +17,7 @@ export function BracketFill({ onClose }: BracketFillProps) {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ picks: Record<string, 'top' | 'bottom'>; reasoning: string } | null>(null);
   const [simulations, setSimulations] = useState<Simulation[]>([]);
+  const [customPrompt, setCustomPrompt] = useState('');
 
   // Load simulation history
   useEffect(() => {
@@ -86,6 +87,7 @@ export function BracketFill({ onClose }: BracketFillProps) {
         bracketContext: buildBracketContext(),
         provider: settings.provider,
         apiKey: settings.apiKey || undefined,
+        userPrompt: customPrompt.trim() || undefined,
       });
 
       if (response.error) {
@@ -156,12 +158,21 @@ export function BracketFill({ onClose }: BracketFillProps) {
           </div>
 
           {!loading && !result && (
-            <button className={styles.fillBtn} onClick={handleFill} disabled={!settings.provider}>
-              Fill My Bracket with AI
-              <span style={{ fontSize: '10px', opacity: 0.8 }}>
-                ({settings.provider === 'cli' ? 'Claude Max' : 'API'})
-              </span>
-            </button>
+            <>
+              <textarea
+                className={styles.promptInput}
+                value={customPrompt}
+                onChange={e => setCustomPrompt(e.target.value)}
+                placeholder="Optional: Give Claude specific instructions... e.g., &quot;I think Duke is overrated, favor upsets in the East region&quot; or &quot;Pick heavy favorites, minimize risk&quot; or &quot;I have a gut feeling about Akron making the Sweet 16&quot;"
+                rows={3}
+              />
+              <button className={styles.fillBtn} onClick={handleFill} disabled={!settings.provider}>
+                Fill My Bracket with AI
+                <span style={{ fontSize: '10px', opacity: 0.8 }}>
+                  ({settings.provider === 'cli' ? 'Claude Max' : 'API'})
+                </span>
+              </button>
+            </>
           )}
 
           {loading && (

@@ -20,6 +20,7 @@ export interface AIFillBracketRequest {
   bracketContext: string;
   provider: 'cli' | 'api';
   apiKey?: string;
+  userPrompt?: string;
 }
 
 export interface AIFillBracketResponse {

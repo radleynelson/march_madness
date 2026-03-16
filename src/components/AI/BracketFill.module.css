@@ -64,6 +64,29 @@
   margin-bottom: 16px;
 }
 
+.promptInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  margin-bottom: 12px;
+  font-family: inherit;
+}
+
+.promptInput:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+}
+
+.promptInput::placeholder {
+  color: #aaa;
+  font-size: 12px;
+}
+
 .fillBtn {
   width: 100%;
   padding: 12px 20px;

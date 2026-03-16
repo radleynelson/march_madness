@@ -1,10 +1,11 @@
 import { createServer } from 'http';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, writeFileSync, unlinkSync, mkdtempSync } from 'fs';
 import { join, extname } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { execFile, exec } from 'child_process';
+import { execFile, exec, spawn } from 'child_process';
 import { request as httpsRequest } from 'https';
+import { tmpdir } from 'os';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, 'dist');
@@ -63,20 +64,45 @@ function readBody(req) {
 // ---------------------------------------------------------------------------
 function callCli(prompt) {
   return new Promise((resolve, reject) => {
-    const child = execFile('claude', ['--print', '--output-format', 'json'], {
-      timeout: 120_000,
-      maxBuffer: 10 * 1024 * 1024,
-    }, (err, stdout, stderr) => {
-      if (err) {
-        // Distinguish "not found" from other errors
-        if (err.code === 'ENOENT') {
-          return reject({ status: 503, message: 'Claude CLI is not installed or not in PATH' });
-        }
-        return reject({ status: 500, message: `CLI error: ${stderr || err.message}` });
-      }
-      resolve(stdout);
+    // Write prompt to a temp file to avoid stdin buffering issues with long prompts
+    const tmpDir = mkdtempSync(join(tmpdir(), 'mm-ai-'));
+    const tmpFile = join(tmpDir, 'prompt.txt');
+    writeFileSync(tmpFile, prompt, 'utf-8');
+
+    const child = spawn('claude', ['--print', '--output-format', 'json'], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 180_000,
+      env: { ...process.env },
     });
-    // Send the prompt via stdin
+
+    const stdoutChunks = [];
+    const stderrChunks = [];
+
+    child.stdout.on('data', (chunk) => stdoutChunks.push(chunk));
+    child.stderr.on('data', (chunk) => stderrChunks.push(chunk));
+
+    child.on('error', (err) => {
+      try { unlinkSync(tmpFile); } catch {}
+      if (err.code === 'ENOENT') {
+        reject({ status: 503, message: 'Claude CLI is not installed or not in PATH' });
+      } else {
+        reject({ status: 500, message: `CLI error: ${err.message}` });
+      }
+    });
+
+    child.on('close', (code) => {
+      try { unlinkSync(tmpFile); } catch {}
+      const stdout = Buffer.concat(stdoutChunks).toString();
+      const stderr = Buffer.concat(stderrChunks).toString();
+
+      if (code !== 0 && !stdout) {
+        reject({ status: 500, message: `CLI exited with code ${code}: ${stderr || 'Unknown error'}` });
+      } else {
+        resolve(stdout);
+      }
+    });
+
+    // Pipe the prompt via stdin
     child.stdin.write(prompt);
     child.stdin.end();
   });
@@ -245,7 +271,7 @@ async function handleFillBracket(req, res) {
     return sendJson(res, 400, { error: 'Invalid JSON body' });
   }
 
-  const { bracketContext, provider, apiKey } = body;
+  const { bracketContext, provider, apiKey, userPrompt: customPrompt } = body;
 
   if (!bracketContext) {
     return sendJson(res, 400, { error: 'bracketContext is required' });
@@ -254,7 +280,11 @@ async function handleFillBracket(req, res) {
     return sendJson(res, 400, { error: "provider must be 'cli' or 'api'" });
   }
 
-  const userPrompt = `Here is the current bracket state:\n\n${bracketContext}\n\nPlease fill in all remaining matchups. Return ONLY the JSON object with picks and reasoning.`;
+  let userPrompt = `Here is the current bracket state:\n\n${bracketContext}\n\n`;
+  if (customPrompt) {
+    userPrompt += `ADDITIONAL INSTRUCTIONS FROM USER:\n${customPrompt}\n\n`;
+  }
+  userPrompt += `Please fill in all remaining matchups. Return ONLY the JSON object with picks and reasoning.`;
 
   try {
     let rawContent;
