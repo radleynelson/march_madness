@@ -283,7 +283,7 @@ async function handleFillBracket(req, res) {
 
   let userPrompt = '';
   if (customPrompt) {
-    userPrompt += `USER'S INSTRUCTIONS (YOU MUST FOLLOW THESE — THEY OVERRIDE EVERYTHING ELSE):\n${customPrompt}\n\nYou MUST use web search to research what the user is asking about before making picks. Do NOT just rely on the bracket data below. Actually search the web, find the relevant information, and make your picks based on what the user asked for. The bracket data below is only for knowing which teams are playing and the matchup IDs.\n\n---\n\n`;
+    userPrompt += `USER'S INSTRUCTIONS (YOU MUST FOLLOW THESE — THEY OVERRIDE EVERYTHING ELSE):\n${customPrompt}\n\nUse web search if you need external information to answer the user's request. The bracket data below contains team ratings and model probabilities which you can use as a fallback, but the user's criteria above takes priority.\n\n---\n\n`;
   }
   userPrompt += `Here is the current bracket state:\n\n${bracketContext}\n\nPlease fill in all remaining matchups${customPrompt ? ' based on the user\'s instructions above (use web search!)' : ''}. Return ONLY the JSON object with picks and reasoning.${customPrompt ? ' In your reasoning, explain what you found from web search and how you applied the user\'s criteria.' : ''}`;
 
@@ -297,9 +297,11 @@ async function handleFillBracket(req, res) {
       const systemPrompt = FILL_BRACKET_SYSTEM + (customPrompt ? `
 
 ADDITIONAL PRIORITY INSTRUCTIONS:
-The user has provided specific criteria for making picks. Their criteria is the PRIMARY factor — use web search if needed to research it. However, you still have all the bracket data, team ratings, and model probabilities as context. When the user's criteria doesn't give a clear answer for a matchup (e.g., no data available for both teams), fall back on the team ratings and model probabilities provided in the bracket data.
+The user has provided specific criteria for making picks. Their criteria OVERRIDES the team ratings, model probabilities, and default analysis above. Do NOT rely on the ratings or model probabilities unless the user's criteria has no clear answer for a specific matchup. Use web search only if you need external information to fulfill the user's request (e.g., NIL budgets, injury reports).
 
-In your reasoning, always reference actual team names (never say "top team" or "bottom team"). Explain how you applied the user's criteria AND note where you fell back on model analysis.` : '');
+For example, if the user says "pick based on NIL budgets," you must search for NIL budget data and pick the team with the higher NIL budget — even if that team has a lower rating or model probability. The ratings and model data are ONLY a fallback for matchups where the user's criteria produces no clear answer (e.g., no data available for one of the teams).
+
+In your reasoning, always reference actual team names (never say "top team" or "bottom team"). Explain how you applied the user's criteria AND note any matchups where you had to fall back on model analysis because the user's criteria had no clear answer.` : '');
 
       const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
       console.log(`[fill-bracket] CLI prompt first 500 chars:\n${fullPrompt.slice(0, 500)}`);
@@ -322,9 +324,11 @@ In your reasoning, always reference actual team names (never say "top team" or "
       const apiSystemPrompt = FILL_BRACKET_SYSTEM + (customPrompt ? `
 
 ADDITIONAL PRIORITY INSTRUCTIONS:
-The user has provided specific criteria for making picks. Their criteria is the PRIMARY factor — use web search if needed to research it. However, you still have all the bracket data, team ratings, and model probabilities as context. When the user's criteria doesn't give a clear answer for a matchup (e.g., no data available for both teams), fall back on the team ratings and model probabilities provided in the bracket data.
+The user has provided specific criteria for making picks. Their criteria OVERRIDES the team ratings, model probabilities, and default analysis above. Do NOT rely on the ratings or model probabilities unless the user's criteria has no clear answer for a specific matchup. Use web search only if you need external information to fulfill the user's request (e.g., NIL budgets, injury reports).
 
-In your reasoning, always reference actual team names (never say "top team" or "bottom team"). Explain how you applied the user's criteria AND note where you fell back on model analysis.` : '');
+For example, if the user says "pick based on NIL budgets," you must search for NIL budget data and pick the team with the higher NIL budget — even if that team has a lower rating or model probability. The ratings and model data are ONLY a fallback for matchups where the user's criteria produces no clear answer (e.g., no data available for one of the teams).
+
+In your reasoning, always reference actual team names (never say "top team" or "bottom team"). Explain how you applied the user's criteria AND note any matchups where you had to fall back on model analysis because the user's criteria had no clear answer.` : '');
       const apiResponse = await callAnthropicApi(apiMessages, apiSystemPrompt, apiKey);
       rawContent = extractTextFromApiResponse(apiResponse);
     }
