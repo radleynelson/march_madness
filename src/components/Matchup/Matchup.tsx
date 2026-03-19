@@ -157,9 +157,9 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
         <button
           className={`${styles.previewBtn} ${isLive ? styles.liveBtn : ''}`}
           onClick={handlePreviewClick}
-          title={isLive ? 'Live Game' : 'Game Preview'}
+          title={isLive ? 'Live Game' : isFinal ? 'Game Recap' : 'Game Preview'}
         >
-          {isLive ? 'Live' : 'Preview'}
+          {isLive ? 'Live' : isFinal ? 'Recap' : 'Preview'}
         </button>
       )}
     </div>

@@ -78,7 +78,7 @@ function AppContent() {
                   <TableView state={state} />
                 </>
               )}
-              {previewMatchup && previewMatchup.status === 'in_progress' && previewMatchup.espnEventId ? (
+              {previewMatchup && (previewMatchup.status === 'in_progress' || previewMatchup.status === 'final') && previewMatchup.espnEventId ? (
                 <LiveGameModal
                   matchup={previewMatchup}
                   onClose={previewState.closePreview}

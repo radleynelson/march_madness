@@ -62,7 +62,9 @@ export function useLiveGame({ eventId, enabled, pollInterval = 15000 }: UseLiveG
     setState(prev => ({ ...prev, loading: true }));
     fetchData();
 
-    intervalRef.current = setInterval(fetchData, pollInterval);
+    if (pollInterval > 0) {
+      intervalRef.current = setInterval(fetchData, pollInterval);
+    }
 
     return () => {
       if (intervalRef.current) {

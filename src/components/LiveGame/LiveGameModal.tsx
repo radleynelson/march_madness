@@ -808,10 +808,11 @@ export function LiveGameModal({ matchup, onClose }: LiveGameModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>('gamecast');
   const modalRef = useRef<HTMLDivElement>(null);
 
+  const isFinalGame = matchup.status === 'final';
   const { summary, plays, winProbTimeline, loading, error, lastUpdated } = useLiveGame({
     eventId: matchup.espnEventId,
     enabled: true,
-    pollInterval: 15000,
+    pollInterval: isFinalGame ? 0 : 15000, // No polling for final games
   });
 
   // Close on Escape
@@ -936,10 +937,14 @@ export function LiveGameModal({ matchup, onClose }: LiveGameModalProps) {
 
             {/* Footer */}
             <div className={styles.footer}>
-              <span className={styles.footerLive}>
-                <span className={styles.liveDotSmall} />
-                Auto-updating every 15s
-              </span>
+              {isFinalGame ? (
+                <span className={styles.footerTime}>Game Final</span>
+              ) : (
+                <span className={styles.footerLive}>
+                  <span className={styles.liveDotSmall} />
+                  Auto-updating every 15s
+                </span>
+              )}
               {lastUpdated && (
                 <span className={styles.footerTime}>
                   Last updated: {lastUpdated.toLocaleTimeString()}
