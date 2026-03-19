@@ -67,7 +67,10 @@ function matchGamesToUpdates(
     let matched = false;
     for (const [matchupId, matchup] of matchups) {
       if (matchup.espnEventId === update.espnEventId) {
-        matchedUpdates.push({ ...update, matchupId });
+        // Re-map scores to bracket top/bottom order (ESPN competitor order may differ)
+        const topId = matchup.topTeam?.id;
+        const comp0IsTop = competitors[0].team.id === topId;
+        matchedUpdates.push(buildMatchedUpdate(update, matchupId, competitors, comp0IsTop));
         matched = true;
         break;
       }

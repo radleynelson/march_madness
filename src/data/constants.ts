@@ -25,7 +25,7 @@ export const ESPN_SUMMARY_URL = 'https://site.web.api.espn.com/apis/site/v2/spor
 
 // Tournament dates for 2026
 export const TOURNAMENT_DATES = {
-  FIRST_FOUR: ['20260318', '20260319'],
+  FIRST_FOUR: ['20260317', '20260318', '20260319'],
   ROUND_OF_64: ['20260320', '20260321'],
   ROUND_OF_32: ['20260322', '20260323'],
   SWEET_16: ['20260327', '20260328'],
