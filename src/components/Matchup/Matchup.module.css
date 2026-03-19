@@ -65,12 +65,27 @@
   transition: background 0.15s ease;
 }
 
-.matchup:hover .previewBtn {
+.matchup:hover .previewBtn,
+.live .liveBtn {
   display: block;
 }
 
 .previewBtn:hover {
   background: #1a73e8;
+}
+
+/* Live game button style */
+.liveBtn {
+  background: #e53935;
+  animation: livePulseBtn 2s ease infinite;
+}
+.liveBtn:hover {
+  background: #c62828;
+}
+
+@keyframes livePulseBtn {
+  0%, 100% { box-shadow: 0 1px 4px rgba(229, 57, 53, 0.3); }
+  50% { box-shadow: 0 1px 8px rgba(229, 57, 53, 0.6); }
 }
 
 /* Clickable team rows for user picking */

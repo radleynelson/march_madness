@@ -10,6 +10,8 @@ import { Bracket } from './components/Bracket/Bracket';
 import { TableView } from './components/Table/TableView';
 import { GamesCarousel } from './components/Table/GamesCarousel';
 import { MatchupPreview } from './components/Preview/MatchupPreview';
+import { LiveGameModal } from './components/LiveGame/LiveGameModal';
+import { Scoreboard } from './components/Scoreboard/Scoreboard';
 import { Settings } from './components/Settings/Settings';
 import { BracketFill } from './components/AI/BracketFill';
 import './styles/globals.css';
@@ -20,7 +22,7 @@ function AppContent() {
   const [showSettings, setShowSettings] = useState(false);
   const [showBracketFill, setShowBracketFill] = useState(false);
   // Default to table on small screens, but allow switching to bracket (tabbed)
-  const [view, setView] = useState<'bracket' | 'table'>(() =>
+  const [view, setView] = useState<'bracket' | 'table' | 'scores'>(() =>
     window.innerWidth < 1024 ? 'table' : 'bracket'
   );
 
@@ -68,18 +70,25 @@ function AppContent() {
               )}
               {view === 'bracket' ? (
                 <Bracket state={state} onUserAdvance={userAdvance} />
+              ) : view === 'scores' ? (
+                <Scoreboard state={state} />
               ) : (
                 <>
                   <GamesCarousel state={state} />
                   <TableView state={state} />
                 </>
               )}
-              {previewMatchup && (
+              {previewMatchup && previewMatchup.status === 'in_progress' && previewMatchup.espnEventId ? (
+                <LiveGameModal
+                  matchup={previewMatchup}
+                  onClose={previewState.closePreview}
+                />
+              ) : previewMatchup ? (
                 <MatchupPreview
                   matchup={previewMatchup}
                   onClose={previewState.closePreview}
                 />
-              )}
+              ) : null}
               {showSettings && (
                 <Settings onClose={() => setShowSettings(false)} />
               )}

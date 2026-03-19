@@ -1,0 +1,967 @@
+/* ─── Overlay & Modal ──────────────────────────────── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.15s ease;
+  padding: 16px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  animation: slideUp 0.2s ease;
+}
+
+/* ─── Loading / Error ─────────────────────────────── */
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 24px;
+  color: #666;
+  font-size: 14px;
+}
+
+.loadingSpinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #eee;
+  border-top: 3px solid #e53935;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 60px 24px;
+  color: #c62828;
+  font-size: 14px;
+}
+
+.errorDetail {
+  font-size: 12px;
+  color: #999;
+}
+
+/* ─── Scoreboard Header ───────────────────────────── */
+
+.scoreboard {
+  background: #1a1a2e;
+  color: #fff;
+  border-radius: 14px 14px 0 0;
+  padding: 0;
+}
+
+.scoreboardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px 0;
+}
+
+.gameNote {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.scoreboardRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.broadcast {
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0 4px;
+  line-height: 1;
+}
+.closeBtn:hover {
+  color: #fff;
+}
+
+.scoreboardMain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 16px;
+}
+
+.scoreTeam {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.scoreTeamNameRight {
+  justify-content: flex-end;
+}
+
+.scoreLogo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #fff;
+  padding: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.scoreTeamInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.scoreTeamName {
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scoreSeed {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.scoreTeamRecord {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 1px;
+}
+
+.scoreValue {
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: center;
+}
+
+.scoreClock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+
+.liveDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e53935;
+  animation: pulse 1.5s ease infinite;
+}
+
+.clockTime {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.clockPeriod {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+/* Line scores */
+.lineScores {
+  padding: 4px 16px 10px;
+}
+
+.lineScoreTable {
+  width: auto;
+  margin: 0 auto;
+  border-collapse: collapse;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lineScoreTable th {
+  padding: 2px 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+}
+
+.lineScoreTable td {
+  padding: 2px 10px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.lineScoreTeam {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-align: left !important;
+  padding-right: 16px !important;
+}
+
+.lineScoreTotal {
+  font-weight: 800;
+  color: #fff !important;
+}
+
+/* ─── Tab Navigation ──────────────────────────────── */
+
+.tabBar {
+  display: flex;
+  border-bottom: 2px solid #f0f0f0;
+  background: #fafafa;
+  padding: 0 16px;
+}
+
+.tabBtn {
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #888;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tabBtn:hover {
+  color: #333;
+}
+
+.tabBtnActive {
+  color: #e53935;
+  border-bottom-color: #e53935;
+}
+
+/* ─── Tab Content ─────────────────────────────────── */
+
+.tabContent {
+  padding: 0;
+}
+
+.emptyState {
+  padding: 40px 24px;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+}
+
+/* ─── Section Title ───────────────────────────────── */
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #888;
+  padding: 14px 20px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── Win Probability Chart ───────────────────────── */
+
+.winProbSection {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+}
+
+.winProbLabels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.winProbSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 0 12px;
+}
+
+/* ─── Game Leaders ────────────────────────────────── */
+
+.leadersSection {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+}
+
+.leadersGrid {
+  padding: 0 20px;
+}
+
+.leaderRow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f7f7f7;
+}
+
+.leaderRow:last-child {
+  border-bottom: none;
+}
+
+.leaderPlayer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.leaderPlayerReverse {
+  justify-content: flex-end;
+}
+
+.leaderHeadshot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  flex-shrink: 0;
+}
+
+.leaderInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.leaderName {
+  font-size: 12px;
+  font-weight: 700;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leaderSummary {
+  font-size: 10px;
+  color: #999;
+}
+
+.leaderValue {
+  font-size: 20px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderStatLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  min-width: 60px;
+}
+
+/* ─── Team Stats ──────────────────────────────────── */
+
+.teamStatsSection {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+}
+
+.teamStatsHeader {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px 6px;
+  font-size: 12px;
+}
+
+.statRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 20px;
+}
+
+.statValue {
+  width: 42px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #333;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.statBarContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statBarOuter {
+  flex: 1;
+  height: 6px;
+  background: #f0f0f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.statBarAway {
+  height: 100%;
+  border-radius: 3px;
+  float: right;
+  transition: width 0.3s ease;
+}
+
+.statBarHome {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.statLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: #888;
+  white-space: nowrap;
+  min-width: 70px;
+  text-align: center;
+}
+
+/* ─── Odds Section ────────────────────────────────── */
+
+.oddsSection {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+}
+
+.liveBadge {
+  font-size: 9px;
+  font-weight: 800;
+  background: #e53935;
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+.oddsGrid {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  flex-wrap: wrap;
+}
+
+.oddsItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.oddsLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #999;
+}
+
+.oddsValue {
+  font-size: 12px;
+  font-weight: 800;
+  color: #333;
+}
+
+.oddsProvider {
+  font-size: 10px;
+  color: #bbb;
+  margin-left: auto;
+}
+
+/* ─── Recent Plays ────────────────────────────────── */
+
+.recentPlaysSection {
+  padding-bottom: 8px;
+}
+
+.playsList {
+  padding: 0 20px;
+}
+
+.playItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f7f7f7;
+  font-size: 12px;
+}
+
+.playItem:last-child {
+  border-bottom: none;
+}
+
+.scoringPlay {
+  background: #fafff5;
+}
+
+.playLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 40px;
+  flex-shrink: 0;
+}
+
+.playClock {
+  font-size: 11px;
+  font-weight: 700;
+  color: #666;
+  font-variant-numeric: tabular-nums;
+}
+
+.playPeriod {
+  font-size: 9px;
+  color: #aaa;
+}
+
+.playContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.playScoreTag {
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.playText {
+  color: #444;
+  line-height: 1.4;
+}
+
+.playScore {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 700;
+  font-size: 12px;
+  color: #333;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.playScoreSep {
+  color: #ccc;
+  font-weight: 400;
+}
+
+/* ─── Box Score Tab ───────────────────────────────── */
+
+.boxScoreTab {
+  padding: 12px 0;
+}
+
+.boxScoreTeamTabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 12px;
+}
+
+.boxScoreTeamBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+  transition: all 0.15s;
+}
+
+.boxScoreTeamBtn:hover {
+  border-color: #bbb;
+}
+
+.boxScoreTeamBtnActive {
+  color: #111;
+  border-color: #333;
+  background: #f5f5f5;
+}
+
+.boxScoreTeamLogo {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.boxScoreTableWrap {
+  overflow-x: auto;
+  padding: 0 12px;
+}
+
+.boxScoreTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.boxScoreTable th {
+  padding: 6px 6px;
+  text-align: center;
+  font-weight: 700;
+  color: #888;
+  font-size: 10px;
+  text-transform: uppercase;
+  border-bottom: 2px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+.boxScoreTable td {
+  padding: 5px 6px;
+  text-align: center;
+  color: #444;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.boxPlayerCol {
+  text-align: left !important;
+  white-space: nowrap;
+  min-width: 120px;
+  padding-left: 12px !important;
+}
+
+.boxPlayerName {
+  font-weight: 700;
+  color: #222;
+}
+
+.boxPlayerPos {
+  font-size: 10px;
+  color: #aaa;
+  margin-left: 4px;
+}
+
+.boxSectionRow td {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #888;
+  background: #fafafa;
+  padding: 4px 12px !important;
+  text-align: left !important;
+}
+
+.boxTotalsRow td {
+  font-weight: 800;
+  color: #222;
+  border-top: 2px solid #e0e0e0;
+  background: #fafafa;
+}
+
+.boxHighlight {
+  font-weight: 800 !important;
+  color: #111 !important;
+}
+
+.boxDnp td {
+  color: #bbb;
+  font-style: italic;
+}
+
+/* ─── Play-by-Play Tab ────────────────────────────── */
+
+.pbpTab {
+  padding: 12px 0;
+}
+
+.pbpFilters {
+  display: flex;
+  gap: 6px;
+  padding: 0 20px 10px;
+}
+
+.pbpFilterBtn {
+  padding: 4px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.15s;
+}
+
+.pbpFilterBtn:hover {
+  border-color: #bbb;
+}
+
+.pbpFilterActive {
+  background: #333;
+  color: #fff;
+  border-color: #333;
+}
+
+.pbpHeader {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.pbpList {
+  padding: 0 12px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.pbpItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 8px;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 12px;
+}
+
+.pbpItem:last-child {
+  border-bottom: none;
+}
+
+.pbpScoring {
+  background: #fafff5;
+  border-radius: 4px;
+}
+
+.pbpTime {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 36px;
+  flex-shrink: 0;
+}
+
+.pbpClock {
+  font-size: 11px;
+  font-weight: 700;
+  color: #555;
+  font-variant-numeric: tabular-nums;
+}
+
+.pbpPeriod {
+  font-size: 9px;
+  color: #aaa;
+}
+
+.pbpScoreCol {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 12px;
+  color: #333;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.pbpContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.pbpScoreTag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.pbpText {
+  color: #444;
+  line-height: 1.4;
+}
+
+.pbpType {
+  font-weight: 700;
+  color: #222;
+  display: block;
+  font-size: 12px;
+}
+
+/* ─── Footer ──────────────────────────────────────── */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 0 0 14px 14px;
+  font-size: 10px;
+  color: #999;
+}
+
+.footerLive {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.liveDotSmall {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e53935;
+  animation: pulse 1.5s ease infinite;
+}
+
+.footerTime {
+  color: #bbb;
+}
+
+.footerHint {
+  color: #ccc;
+}
+
+/* ─── Animations ──────────────────────────────────── */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ─── Responsive ──────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .modal {
+    max-width: 100%;
+    border-radius: 10px;
+  }
+
+  .scoreboard {
+    border-radius: 10px 10px 0 0;
+  }
+
+  .scoreboardMain {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .scoreLogo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .scoreValue {
+    font-size: 28px;
+  }
+
+  .scoreTeamName {
+    font-size: 12px;
+  }
+
+  .leaderRow {
+    grid-template-columns: 1fr auto 1fr;
+    gap: 4px;
+  }
+
+  .leaderHeadshot {
+    width: 24px;
+    height: 24px;
+  }
+
+  .leaderValue {
+    font-size: 16px;
+  }
+
+  .footer {
+    border-radius: 0 0 10px 10px;
+  }
+}

@@ -71,6 +71,7 @@ export interface Matchup {
 
   // Live/final game data
   status: GameStatus;
+  statusDetail: string | null;
   topScore: number | null;
   bottomScore: number | null;
   clock: string | null;
@@ -99,6 +100,7 @@ export interface ScoreUpdate {
   espnEventId: string;
   matchupId?: string;
   status: GameStatus;
+  statusDetail: string | null;
   topScore: number | null;
   bottomScore: number | null;
   clock: string | null;

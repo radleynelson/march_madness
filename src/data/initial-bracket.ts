@@ -221,6 +221,7 @@ function matchup(
     topWinProbability: 0.5,
     bottomWinProbability: 0.5,
     status: 'scheduled',
+    statusDetail: null,
     topScore: null,
     bottomScore: null,
     clock: null,

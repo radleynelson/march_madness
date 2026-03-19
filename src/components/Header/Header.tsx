@@ -8,8 +8,8 @@ interface HeaderProps {
   onOpenSettings?: () => void;
   onOpenBracketFill?: () => void;
   aiEnabled?: boolean;
-  view?: 'bracket' | 'table';
-  onSetView?: (v: 'bracket' | 'table') => void;
+  view?: 'bracket' | 'table' | 'scores';
+  onSetView?: (v: 'bracket' | 'table' | 'scores') => void;
 }
 
 export function Header({ state, hasUserPicks, onClearPicks, onOpenSettings, onOpenBracketFill, aiEnabled, view, onSetView }: HeaderProps) {
@@ -56,6 +56,12 @@ export function Header({ state, hasUserPicks, onClearPicks, onOpenSettings, onOp
               onClick={() => onSetView('bracket')}
             >
               Bracket
+            </button>
+            <button
+              className={`${styles.viewBtn} ${view === 'scores' ? styles.viewBtnActive : ''}`}
+              onClick={() => onSetView('scores')}
+            >
+              Scores
             </button>
             <button
               className={`${styles.viewBtn} ${view === 'table' ? styles.viewBtnActive : ''}`}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import type { BracketState, BracketAction, ScoreUpdate } from '../types/bracket';
-import { fetchScoreboard, filterTournamentGames, eventsToScoreUpdates, formatDate } from '../api/espn';
+import { fetchScoreboard, filterTournamentGames, eventsToScoreUpdates, formatDate, fetchLiveWinProbability } from '../api/espn';
 import { POLLING_INTERVALS, ALL_TOURNAMENT_DATES } from '../data/constants';
 import type { EspnCompetitor } from '../types/espn';
 
@@ -36,6 +36,7 @@ function buildMatchedUpdate(
     espnEventId: update.espnEventId,
     matchupId,
     status: update.status,
+    statusDetail: update.statusDetail,
     topScore: isNaN(topScore) ? null : topScore,
     bottomScore: isNaN(bottomScore) ? null : bottomScore,
     clock: update.clock,
@@ -158,6 +159,23 @@ export function useLiveScores({ state, dispatch, enabled = true }: UseLiveScores
 
     const rawUpdates = eventsToScoreUpdates(tourneyGames) as (ScoreUpdate & { _competitors?: EspnCompetitor[] })[];
     const matchedUpdates = matchGamesToUpdates(rawUpdates, matchupsRef.current);
+
+    // Enrich live games with ESPN win probabilities
+    const liveMatched = matchedUpdates.filter(u => u.status === 'in_progress' && u.matchupId);
+    if (liveMatched.length > 0) {
+      const wpResults = await Promise.all(liveMatched.map(async (update) => {
+        const matchup = matchupsRef.current.get(update.matchupId!);
+        if (!matchup?.topTeam?.id || !update.espnEventId) return null;
+        const wp = await fetchLiveWinProbability(update.espnEventId, matchup.topTeam.id);
+        return wp !== null ? { matchupId: update.matchupId!, wp } : null;
+      }));
+
+      for (const result of wpResults) {
+        if (!result) continue;
+        const update = matchedUpdates.find(u => u.matchupId === result.matchupId);
+        if (update) update.liveTopWinProbability = result.wp;
+      }
+    }
 
     if (matchedUpdates.length > 0) {
       dispatch({ type: 'UPDATE_SCORES', updates: matchedUpdates });

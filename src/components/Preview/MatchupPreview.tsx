@@ -1,12 +1,48 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import type { Matchup, Team } from '../../types/bracket';
 import type { TeamProfile, TeamOdds } from '../../types/preview';
 import { TEAM_PROFILES } from '../../data/team-profiles';
 import { TEAM_ODDS, MATCHUP_LINES } from '../../data/team-odds';
 import type { MatchupLine } from '../../data/team-odds';
 import { winProbability } from '../../model/predictions';
+import { fetchGameSummary } from '../../api/espn';
 import { AIChat } from './AIChat';
 import styles from './MatchupPreview.module.css';
+
+interface EspnOdds {
+  spread: string;
+  overUnder: number;
+  homeML: number;
+  awayML: number;
+  provider: string;
+}
+
+function useEspnOdds(eventId: string | null): EspnOdds | null {
+  const [odds, setOdds] = useState<EspnOdds | null>(null);
+
+  useEffect(() => {
+    if (!eventId) return;
+    let cancelled = false;
+
+    fetchGameSummary(eventId).then(summary => {
+      if (cancelled) return;
+      const pick = summary.pickcenter?.[0];
+      if (!pick) return;
+
+      setOdds({
+        spread: pick.details || '',
+        overUnder: pick.overUnder || 0,
+        homeML: pick.homeTeamOdds?.moneyLine ?? 0,
+        awayML: pick.awayTeamOdds?.moneyLine ?? 0,
+        provider: pick.provider?.name || '',
+      });
+    }).catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [eventId]);
+
+  return odds;
+}
 
 interface MatchupPreviewProps {
   matchup: Matchup;
@@ -127,6 +163,7 @@ export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
   const topOdds = getOdds(topTeam);
   const bottomOdds = getOdds(bottomTeam);
   const line: MatchupLine | null = MATCHUP_LINES[matchup.id] ?? null;
+  const espnOdds = useEspnOdds(matchup.espnEventId);
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -171,7 +208,37 @@ export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
 
           {/* Betting line + championship odds */}
           <div className={styles.oddsRow}>
-            {line && (
+            {espnOdds ? (
+              <>
+                {espnOdds.spread && (
+                  <div className={styles.oddsItem}>
+                    <span className={styles.oddsLabel}>Spread:</span>
+                    <span className={styles.oddsValue}>{espnOdds.spread}</span>
+                  </div>
+                )}
+                {espnOdds.overUnder > 0 && (
+                  <div className={styles.oddsItem}>
+                    <span className={styles.oddsLabel}>O/U:</span>
+                    <span className={styles.oddsValue}>{espnOdds.overUnder}</span>
+                  </div>
+                )}
+                {(espnOdds.homeML || espnOdds.awayML) && (
+                  <div className={styles.oddsItem}>
+                    <span className={styles.oddsLabel}>ML:</span>
+                    <span className={styles.oddsValue}>
+                      {espnOdds.homeML > 0 ? '+' : ''}{espnOdds.homeML} / {espnOdds.awayML > 0 ? '+' : ''}{espnOdds.awayML}
+                    </span>
+                  </div>
+                )}
+                {espnOdds.provider && (
+                  <div className={styles.oddsItem}>
+                    <span className={styles.oddsLabel} style={{ color: '#bbb', fontWeight: 400 }}>
+                      {espnOdds.provider}
+                    </span>
+                  </div>
+                )}
+              </>
+            ) : line ? (
               <>
                 <div className={styles.oddsItem}>
                   <span className={styles.oddsLabel}>Spread:</span>
@@ -188,7 +255,7 @@ export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
                   </span>
                 </div>
               </>
-            )}
+            ) : null}
             {topOdds && (
               <div className={styles.oddsItem}>
                 <span className={styles.oddsLabel}>{topTeam.shortName} Title:</span>

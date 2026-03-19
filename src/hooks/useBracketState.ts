@@ -146,11 +146,12 @@ function bracketReducer(state: BracketState, action: BracketAction): BracketStat
           ...existing,
           espnEventId: update.espnEventId,
           status: update.status,
+          statusDetail: update.statusDetail ?? existing.statusDetail,
           topScore: update.topScore,
           bottomScore: update.bottomScore,
           clock: update.clock,
           period: update.period,
-          liveTopWinProbability: update.liveTopWinProbability,
+          liveTopWinProbability: update.liveTopWinProbability ?? existing.liveTopWinProbability,
         };
 
         if (update.status === 'in_progress') anyLive = true;
@@ -329,11 +330,12 @@ function bracketReducer(state: BracketState, action: BracketAction): BracketStat
             ...existing,
             espnEventId: update.espnEventId,
             status: update.status,
+            statusDetail: update.statusDetail ?? existing.statusDetail,
             topScore: update.topScore,
             bottomScore: update.bottomScore,
             clock: update.clock,
             period: update.period,
-            liveTopWinProbability: update.liveTopWinProbability,
+            liveTopWinProbability: update.liveTopWinProbability ?? existing.liveTopWinProbability,
           });
         }
         newState = { ...newState, matchups: newMatchups };

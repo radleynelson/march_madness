@@ -1,0 +1,362 @@
+/* ─── Container ───────────────────────────────────── */
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+}
+
+/* ─── Date Bar ────────────────────────────────────── */
+
+.dateBar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg-secondary, #f5f5f5);
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  padding: 10px 0;
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.dateScroller {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+
+.dateScroller::-webkit-scrollbar {
+  display: none;
+}
+
+.dateBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.dateBtn:hover {
+  border-color: #999;
+  background: #fafafa;
+}
+
+.dateBtnActive {
+  background: #1a1a2e;
+  color: #fff;
+  border-color: #1a1a2e;
+}
+
+.dateBtnActive:hover {
+  background: #2a2a40;
+  border-color: #2a2a40;
+}
+
+.dateBtnDay {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dateBtnRound {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  opacity: 0.6;
+}
+
+/* ─── Summary Bar ─────────────────────────────────── */
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 10px;
+}
+
+.summaryTitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary, #111);
+}
+
+.summaryBadges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.badgeLive {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #e53935;
+  background: #fef2f2;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+.badgeScheduled {
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  background: #f5f5f5;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+.badgeFinal {
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  background: #f0f0f0;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+/* ─── Grid ────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+/* ─── Game Card ───────────────────────────────────── */
+
+.card {
+  background: #fff;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-color: #ccc;
+  transform: translateY(-1px);
+}
+
+.cardLive {
+  border-color: #e53935;
+  border-width: 1.5px;
+  box-shadow: 0 0 0 1px rgba(229, 57, 53, 0.1);
+}
+
+.cardFinal {
+  opacity: 0.75;
+}
+
+.cardFinal:hover {
+  opacity: 1;
+}
+
+/* Card header */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cardStatus {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.liveDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e53935;
+  animation: pulse 1.5s ease infinite;
+  flex-shrink: 0;
+}
+
+.statusLive {
+  color: #e53935;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.statusFinal {
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statusScheduled {
+  color: #555;
+}
+
+.cardRound {
+  font-size: 10px;
+  font-weight: 600;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Team row */
+.teamRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  transition: background 0.1s;
+}
+
+.teamRow:first-of-type {
+  padding-top: 10px;
+}
+
+.teamRow:last-of-type {
+  padding-bottom: 10px;
+}
+
+.teamWinner {
+  font-weight: 800;
+}
+
+.teamLoser {
+  opacity: 0.45;
+}
+
+.teamLogo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  flex-shrink: 0;
+}
+
+.teamSeed {
+  font-size: 11px;
+  font-weight: 700;
+  color: #999;
+  min-width: 16px;
+  text-align: right;
+}
+
+.teamName {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #111);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.teamScore {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary, #111);
+  min-width: 28px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.teamProb {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  min-width: 30px;
+  text-align: right;
+}
+
+.winnerCheck {
+  font-size: 14px;
+  color: #2e7d32;
+  font-weight: 800;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Probability bar */
+.probBar {
+  display: flex;
+  height: 4px;
+  margin: 0 12px 8px;
+  border-radius: 2px;
+  overflow: hidden;
+  gap: 1px;
+}
+
+.probBarFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Odds row */
+.oddsRow {
+  display: flex;
+  gap: 12px;
+  padding: 0 12px 8px;
+  font-size: 11px;
+  color: #888;
+}
+
+.oddsItem {
+  font-weight: 600;
+  color: #777;
+}
+
+/* ─── States ──────────────────────────────────────── */
+
+.loadingState {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* ─── Animations ──────────────────────────────────── */
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ─── Responsive ──────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}

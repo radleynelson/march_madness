@@ -131,7 +131,7 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
       )}
 
       {isLive && (
-        <LiveIndicator clock={clock} period={period} />
+        <LiveIndicator clock={clock} period={period} statusDetail={matchup.statusDetail} />
       )}
 
       <div
@@ -152,14 +152,14 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
         />
       </div>
 
-      {/* Preview button - shown on all matchups with both teams */}
+      {/* Preview/Live button - shown on all matchups with both teams */}
       {topTeam && bottomTeam && (
         <button
-          className={styles.previewBtn}
+          className={`${styles.previewBtn} ${isLive ? styles.liveBtn : ''}`}
           onClick={handlePreviewClick}
-          title="Game Preview"
+          title={isLive ? 'Live Game' : 'Game Preview'}
         >
-          Preview
+          {isLive ? 'Live' : 'Preview'}
         </button>
       )}
     </div>
