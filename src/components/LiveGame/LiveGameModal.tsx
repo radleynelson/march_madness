@@ -30,9 +30,11 @@ function formatPeriod(period: number): string {
 }
 
 function formatPeriodShort(period: number): string {
+  if (!period || isNaN(period)) return '';
   if (period === 1) return '1st';
   if (period === 2) return '2nd';
-  return `OT${period - 2}`;
+  const otNum = period - 2;
+  return `OT${otNum > 1 ? otNum : ''}`;
 }
 
 /** Format camelCase play type into readable text */
@@ -113,7 +115,9 @@ function ScoreboardHeader({
         {/* Clock */}
         <div className={styles.scoreClock}>
           {isLive && <span className={styles.liveDot} />}
-          {status.type.detail?.toLowerCase().includes('halftime') || (status.displayClock === '0:00' && status.period === 1) ? (
+          {status.type.state === 'post' ? (
+            <span className={styles.clockTime}>Final</span>
+          ) : status.type.detail?.toLowerCase().includes('halftime') || (status.displayClock === '0:00' && status.period === 1) ? (
             <span className={styles.clockTime}>Halftime</span>
           ) : (
             <>
