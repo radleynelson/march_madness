@@ -200,7 +200,12 @@ function GameCard({
           {isFinal && <span className={styles.statusFinal}>Final</span>}
           {isScheduled && <span className={styles.statusScheduled}>{startTime}</span>}
         </div>
-        <div className={styles.cardRound}>{getRoundForDate(event.date.slice(0, 10).replace(/-/g, ''))}</div>
+        <div className={styles.cardHeaderRight}>
+          {comp.broadcasts?.[0]?.names?.[0] && (
+            <span className={styles.broadcastBadge}>{comp.broadcasts[0].names[0]}</span>
+          )}
+          <span className={styles.cardRound}>{getRoundForDate(event.date.slice(0, 10).replace(/-/g, ''))}</span>
+        </div>
       </div>
 
       {/* Team rows */}

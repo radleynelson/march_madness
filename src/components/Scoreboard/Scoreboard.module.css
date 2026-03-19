@@ -210,6 +210,22 @@
   color: #555;
 }
 
+.cardHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.broadcastBadge {
+  font-size: 9px;
+  font-weight: 700;
+  color: #555;
+  background: #eee;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.3px;
+}
+
 .cardRound {
   font-size: 10px;
   font-weight: 600;

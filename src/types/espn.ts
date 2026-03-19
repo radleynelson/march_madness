@@ -45,6 +45,7 @@ export interface EspnCompetition {
     details: string;
     overUnder: number;
   }[];
+  broadcasts?: { names: string[] }[];
 }
 
 export interface EspnCompetitor {
