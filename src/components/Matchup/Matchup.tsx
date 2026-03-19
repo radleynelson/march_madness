@@ -41,9 +41,14 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
 
   const handlePreviewClick = useCallback(() => {
     if (topTeam && bottomTeam) {
-      openPreview(matchup.id);
+      const isMobile = window.innerWidth <= 600;
+      if (isMobile && (status === 'in_progress' || status === 'final') && matchup.espnEventId) {
+        window.location.hash = 'game/' + matchup.espnEventId;
+      } else {
+        openPreview(matchup.id);
+      }
     }
-  }, [topTeam, bottomTeam, matchup.id, openPreview]);
+  }, [topTeam, bottomTeam, matchup.id, matchup.espnEventId, status, openPreview]);
 
   const handleMouseLeave = useCallback(() => {
     setHoveredTeamId(null);

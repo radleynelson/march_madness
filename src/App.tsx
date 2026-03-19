@@ -26,6 +26,13 @@ function AppContent() {
   type View = 'bracket' | 'table' | 'scores';
   const VALID_VIEWS = new Set<View>(['bracket', 'table', 'scores']);
 
+  /** Parse a `#game/{eventId}` hash and return the eventId, or null */
+  const getGameEventIdFromHash = (): string | null => {
+    const hash = window.location.hash.replace('#', '');
+    const match = hash.match(/^game\/(.+)$/);
+    return match ? match[1] : null;
+  };
+
   const getViewFromHash = (): View => {
     const hash = window.location.hash.replace('#', '') as View;
     if (VALID_VIEWS.has(hash)) return hash;
@@ -33,6 +40,7 @@ function AppContent() {
   };
 
   const [view, setViewState] = useState<View>(getViewFromHash);
+  const [gameEventId, setGameEventId] = useState<string | null>(getGameEventIdFromHash);
 
   const setView = useCallback((v: View) => {
     setViewState(v);
@@ -41,7 +49,13 @@ function AppContent() {
 
   // Sync on back/forward navigation
   useEffect(() => {
-    const onHashChange = () => setViewState(getViewFromHash());
+    const onHashChange = () => {
+      const eventId = getGameEventIdFromHash();
+      setGameEventId(eventId);
+      if (!eventId) {
+        setViewState(getViewFromHash());
+      }
+    };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
@@ -60,6 +74,39 @@ function AppContent() {
   const previewMatchup = previewState.previewMatchupId
     ? state.matchups.get(previewState.previewMatchupId) ?? null
     : null;
+
+  // Find matchup for the full-page game route (mobile #game/{eventId})
+  const fullPageGameMatchup = gameEventId
+    ? (() => {
+        for (const m of state.matchups.values()) {
+          if (m.espnEventId === gameEventId) return m;
+        }
+        return null;
+      })()
+    : null;
+
+  const closeFullPageGame = useCallback(() => {
+    window.history.back();
+  }, []);
+
+  // If a full-page game route is active on mobile, render only the game view
+  if (gameEventId && fullPageGameMatchup) {
+    return (
+      <SettingsContext.Provider value={settingsState}>
+        <BracketContext.Provider value={{ state, dispatch }}>
+          <HoverContext.Provider value={hoverState}>
+            <PreviewContext.Provider value={previewState}>
+              <LiveGameModal
+                matchup={fullPageGameMatchup}
+                onClose={closeFullPageGame}
+                fullPage
+              />
+            </PreviewContext.Provider>
+          </HoverContext.Provider>
+        </BracketContext.Provider>
+      </SettingsContext.Provider>
+    );
+  }
 
   return (
     <SettingsContext.Provider value={settingsState}>

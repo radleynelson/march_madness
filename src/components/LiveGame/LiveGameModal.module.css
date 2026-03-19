@@ -917,6 +917,34 @@
   50% { opacity: 0.4; }
 }
 
+/* ─── Full-page variant (mobile hash-route) ──────── */
+
+.overlayFullPage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fff;
+}
+
+.modalFullPage {
+  background: #fff;
+  border-radius: 0;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  overflow-y: auto;
+  box-shadow: none;
+}
+
+.modalFullPage .scoreboard {
+  border-radius: 0;
+}
+
+.modalFullPage .footer {
+  border-radius: 0;
+}
+
 /* ─── Responsive ──────────────────────────────────── */
 
 @media (max-width: 600px) {

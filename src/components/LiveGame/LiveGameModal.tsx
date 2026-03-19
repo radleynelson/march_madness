@@ -14,6 +14,7 @@ type Tab = 'gamecast' | 'boxscore' | 'plays';
 interface LiveGameModalProps {
   matchup: Matchup;
   onClose: () => void;
+  fullPage?: boolean;
 }
 
 // ─── Helpers ──────────────────────────────────────────────
@@ -56,10 +57,12 @@ function ScoreboardHeader({
   summary,
   matchup,
   onClose,
+  useAbbreviation,
 }: {
   summary: EspnGameSummaryResponse;
   matchup: Matchup;
   onClose: () => void;
+  useAbbreviation?: boolean;
 }) {
   const comp = summary.header.competitions[0];
   if (!comp) return null;
@@ -98,7 +101,7 @@ function ScoreboardHeader({
           <div className={styles.scoreTeamInfo}>
             <div className={styles.scoreTeamName}>
               {awayComp.rank && <span className={styles.scoreSeed}>{awayComp.rank}</span>}
-              {awayComp.team.location}
+              {useAbbreviation ? awayComp.team.abbreviation : awayComp.team.location}
             </div>
             <div className={styles.scoreTeamRecord}>
               {awayComp.record?.find(r => r.type === 'total')?.summary ?? ''}
@@ -126,7 +129,7 @@ function ScoreboardHeader({
         <div className={styles.scoreTeam}>
           <div className={styles.scoreTeamInfo} style={{ textAlign: 'right' }}>
             <div className={`${styles.scoreTeamName} ${styles.scoreTeamNameRight}`}>
-              {homeComp.team.location}
+              {useAbbreviation ? homeComp.team.abbreviation : homeComp.team.location}
               {homeComp.rank && <span className={styles.scoreSeed}>{homeComp.rank}</span>}
             </div>
             <div className={styles.scoreTeamRecord}>
@@ -796,7 +799,7 @@ function LiveOdds({ summary }: { summary: EspnGameSummaryResponse }) {
 
 // ─── Main Modal ───────────────────────────────────────────
 
-export function LiveGameModal({ matchup, onClose }: LiveGameModalProps) {
+export function LiveGameModal({ matchup, onClose, fullPage = false }: LiveGameModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>('gamecast');
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -814,13 +817,17 @@ export function LiveGameModal({ matchup, onClose }: LiveGameModalProps) {
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
+    if (!fullPage) {
+      document.body.style.overflow = 'hidden';
+    }
     modalRef.current?.scrollTo(0, 0);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
+      if (!fullPage) {
+        document.body.style.overflow = '';
+      }
     };
-  }, [handleKeyDown]);
+  }, [handleKeyDown, fullPage]);
 
   // Derive team info from summary
   const comp = summary?.header?.competitions?.[0];
@@ -834,116 +841,123 @@ export function LiveGameModal({ matchup, onClose }: LiveGameModalProps) {
   const homeAbbr = homeComp?.team?.abbreviation ?? 'HOME';
   const awayAbbr = awayComp?.team?.abbreviation ?? 'AWAY';
 
-  return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} ref={modalRef} onClick={e => e.stopPropagation()}>
-        {/* Loading state */}
-        {loading && !summary && (
-          <div className={styles.loadingState}>
-            <div className={styles.loadingSpinner} />
-            <span>Loading live game data...</span>
+  const overlayClass = fullPage ? styles.overlayFullPage : styles.overlay;
+  const modalClass = fullPage ? styles.modalFullPage : styles.modal;
+
+  const content = (
+    <div className={modalClass} ref={modalRef} onClick={fullPage ? undefined : e => e.stopPropagation()}>
+      {/* Loading state */}
+      {loading && !summary && (
+        <div className={styles.loadingState}>
+          <div className={styles.loadingSpinner} />
+          <span>Loading live game data...</span>
+        </div>
+      )}
+
+      {/* Error state */}
+      {error && !summary && (
+        <div className={styles.errorState}>
+          <span>Failed to load game data</span>
+          <span className={styles.errorDetail}>{error}</span>
+          <button className={styles.closeBtn} onClick={onClose}>Close</button>
+        </div>
+      )}
+
+      {/* Main content */}
+      {summary && (
+        <>
+          <ScoreboardHeader summary={summary} matchup={matchup} onClose={onClose} useAbbreviation={fullPage} />
+
+          {/* Tab navigation */}
+          <div className={styles.tabBar}>
+            {(['gamecast', 'boxscore', 'plays'] as Tab[]).map(tab => (
+              <button
+                key={tab}
+                className={`${styles.tabBtn} ${activeTab === tab ? styles.tabBtnActive : ''}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab === 'gamecast' ? 'Gamecast' : tab === 'boxscore' ? 'Box Score' : 'Play-by-Play'}
+              </button>
+            ))}
           </div>
-        )}
 
-        {/* Error state */}
-        {error && !summary && (
-          <div className={styles.errorState}>
-            <span>Failed to load game data</span>
-            <span className={styles.errorDetail}>{error}</span>
-            <button className={styles.closeBtn} onClick={onClose}>Close</button>
-          </div>
-        )}
-
-        {/* Main content */}
-        {summary && (
-          <>
-            <ScoreboardHeader summary={summary} matchup={matchup} onClose={onClose} />
-
-            {/* Tab navigation */}
-            <div className={styles.tabBar}>
-              {(['gamecast', 'boxscore', 'plays'] as Tab[]).map(tab => (
-                <button
-                  key={tab}
-                  className={`${styles.tabBtn} ${activeTab === tab ? styles.tabBtnActive : ''}`}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  {tab === 'gamecast' ? 'Gamecast' : tab === 'boxscore' ? 'Box Score' : 'Play-by-Play'}
-                </button>
-              ))}
-            </div>
-
-            {/* Tab content */}
-            <div className={styles.tabContent}>
-              {activeTab === 'gamecast' && (
-                <>
-                  <WinProbChart
-                    data={winProbTimeline.length > 0 ? winProbTimeline : (summary.winprobability ?? [])}
-                    homeColor={homeColor}
-                    awayColor={awayColor}
-                    homeAbbr={homeAbbr}
-                    awayAbbr={awayAbbr}
-                  />
-                  <GameLeaders
-                    leaders={summary.leaders ?? []}
-                    homeTeamId={homeTeamId}
-                    awayTeamId={awayTeamId}
-                    homeColor={homeColor}
-                    awayColor={awayColor}
-                  />
-                  <LiveOdds summary={summary} />
-                  <TeamStats
-                    summary={summary}
-                    homeTeamId={homeTeamId}
-                    homeColor={homeColor}
-                    awayColor={awayColor}
-                    homeAbbr={homeAbbr}
-                    awayAbbr={awayAbbr}
-                  />
-                  <RecentPlays
-                    plays={plays}
-                    homeTeamId={homeTeamId}
-                    homeColor={homeColor}
-                    awayColor={awayColor}
-                  />
-                </>
-              )}
-
-              {activeTab === 'boxscore' && (
-                <BoxScoreTab summary={summary} homeTeamId={homeTeamId} />
-              )}
-
-              {activeTab === 'plays' && (
-                <PlayByPlayTab
-                  plays={plays}
+          {/* Tab content */}
+          <div className={styles.tabContent}>
+            {activeTab === 'gamecast' && (
+              <>
+                <WinProbChart
+                  data={winProbTimeline.length > 0 ? winProbTimeline : (summary.winprobability ?? [])}
+                  homeColor={homeColor}
+                  awayColor={awayColor}
+                  homeAbbr={homeAbbr}
+                  awayAbbr={awayAbbr}
+                />
+                <GameLeaders
+                  leaders={summary.leaders ?? []}
+                  homeTeamId={homeTeamId}
+                  awayTeamId={awayTeamId}
+                  homeColor={homeColor}
+                  awayColor={awayColor}
+                />
+                <LiveOdds summary={summary} />
+                <TeamStats
+                  summary={summary}
                   homeTeamId={homeTeamId}
                   homeColor={homeColor}
                   awayColor={awayColor}
                   homeAbbr={homeAbbr}
                   awayAbbr={awayAbbr}
                 />
-              )}
-            </div>
+                <RecentPlays
+                  plays={plays}
+                  homeTeamId={homeTeamId}
+                  homeColor={homeColor}
+                  awayColor={awayColor}
+                />
+              </>
+            )}
 
-            {/* Footer */}
-            <div className={styles.footer}>
-              {isFinalGame ? (
-                <span className={styles.footerTime}>Game Final</span>
-              ) : (
-                <span className={styles.footerLive}>
-                  <span className={styles.liveDotSmall} />
-                  Auto-updating every 15s
-                </span>
-              )}
-              {lastUpdated && (
-                <span className={styles.footerTime}>
-                  Last updated: {lastUpdated.toLocaleTimeString()}
-                </span>
-              )}
-              <span className={styles.footerHint}>Esc to close</span>
-            </div>
-          </>
-        )}
-      </div>
+            {activeTab === 'boxscore' && (
+              <BoxScoreTab summary={summary} homeTeamId={homeTeamId} />
+            )}
+
+            {activeTab === 'plays' && (
+              <PlayByPlayTab
+                plays={plays}
+                homeTeamId={homeTeamId}
+                homeColor={homeColor}
+                awayColor={awayColor}
+                homeAbbr={homeAbbr}
+                awayAbbr={awayAbbr}
+              />
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className={styles.footer}>
+            {isFinalGame ? (
+              <span className={styles.footerTime}>Game Final</span>
+            ) : (
+              <span className={styles.footerLive}>
+                <span className={styles.liveDotSmall} />
+                Auto-updating every 15s
+              </span>
+            )}
+            {lastUpdated && (
+              <span className={styles.footerTime}>
+                Last updated: {lastUpdated.toLocaleTimeString()}
+              </span>
+            )}
+            {!fullPage && <span className={styles.footerHint}>Esc to close</span>}
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <div className={overlayClass} onClick={fullPage ? undefined : onClose}>
+      {content}
     </div>
   );
 }

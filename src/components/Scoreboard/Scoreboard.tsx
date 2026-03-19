@@ -162,7 +162,13 @@ function GameCard({
   }
 
   const handleClick = () => {
-    if (matchup) onOpen(matchup.id);
+    if (!matchup) return;
+    const isMobile = window.innerWidth <= 600;
+    if (isMobile && (statusState === 'in' || statusState === 'post') && matchup.espnEventId) {
+      window.location.hash = 'game/' + matchup.espnEventId;
+    } else {
+      onOpen(matchup.id);
+    }
   };
 
   return (
