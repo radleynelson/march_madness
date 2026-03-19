@@ -122,7 +122,7 @@ export function parseTorvikData(rawData: unknown[][]): TorvikRatingsMap {
         teamName: String(row[1] ?? ''),
         conference: String(row[2] ?? ''),
         record: String(row[3] ?? ''),
-        adjEfficiency: Number(row[4]) || 0,
+        adjEfficiency: (Number(row[4]) || 0) - (Number(row[6]) || 0),
         adjOffense: Number(row[5]) || 0,
         adjOffenseRank: Number(row[6]) || 0,
         adjDefense: Number(row[7]) || 0,
