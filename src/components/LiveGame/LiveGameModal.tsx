@@ -460,16 +460,12 @@ function RecentPlays({
   homeTeamId,
   homeColor,
   awayColor,
-  homeAbbr,
-  awayAbbr,
   limit = 8,
 }: {
   plays: EspnPlay[];
   homeTeamId: string;
   homeColor: string;
   awayColor: string;
-  homeAbbr: string;
-  awayAbbr: string;
   limit?: number;
 }) {
   if (!plays || plays.length === 0) return null;
@@ -655,11 +651,15 @@ function PlayByPlayTab({
   homeTeamId,
   homeColor,
   awayColor,
+  homeAbbr,
+  awayAbbr,
 }: {
   plays: EspnPlay[];
   homeTeamId: string;
   homeColor: string;
   awayColor: string;
+  homeAbbr: string;
+  awayAbbr: string;
 }) {
   const [filterPeriod, setFilterPeriod] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -904,8 +904,6 @@ export function LiveGameModal({ matchup, onClose }: LiveGameModalProps) {
                     homeTeamId={homeTeamId}
                     homeColor={homeColor}
                     awayColor={awayColor}
-                    homeAbbr={homeAbbr}
-                    awayAbbr={awayAbbr}
                   />
                 </>
               )}
@@ -920,6 +918,8 @@ export function LiveGameModal({ matchup, onClose }: LiveGameModalProps) {
                   homeTeamId={homeTeamId}
                   homeColor={homeColor}
                   awayColor={awayColor}
+                  homeAbbr={homeAbbr}
+                  awayAbbr={awayAbbr}
                 />
               )}
             </div>
