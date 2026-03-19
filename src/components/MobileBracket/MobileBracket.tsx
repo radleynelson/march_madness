@@ -23,20 +23,9 @@ const SHORT_LABELS: Record<RoundName, string> = {
 // Rounds to show in tabs (skip First Four)
 const TAB_ROUNDS: RoundName[] = ROUND_LABELS.filter(r => r !== 'First Four');
 
-// Status sort priority: live first, scheduled second, final last
-function statusPriority(status: string): number {
-  if (status === 'in_progress') return 0;
-  if (status === 'scheduled') return 1;
-  return 2;
-}
-
-function sortMatchups(matchups: Matchup[]): Matchup[] {
-  return [...matchups].sort((a, b) => {
-    const pa = statusPriority(a.status);
-    const pb = statusPriority(b.status);
-    if (pa !== pb) return pa - pb;
-    return a.position - b.position;
-  });
+/** Sort by bracket position (same order as the bracket, top to bottom) */
+function sortByPosition(matchups: Matchup[]): Matchup[] {
+  return [...matchups].sort((a, b) => a.position - b.position);
 }
 
 // ─── Game Card ────────────────────────────────────────────
@@ -233,7 +222,7 @@ export function MobileBracket({ state }: MobileBracketProps) {
       const games = finalFourMatchupIds
         .map(id => matchups.get(id))
         .filter((m): m is Matchup => m !== undefined && m.round === 'Final Four');
-      return { regions: [], ungrouped: sortMatchups(games) };
+      return { regions: [], ungrouped: sortByPosition(games) };
     }
 
     // Regular rounds - group by region
@@ -249,7 +238,7 @@ export function MobileBracket({ state }: MobileBracketProps) {
         regions.push({
           name: regionName,
           color: REGION_COLORS[regionName],
-          games: sortMatchups(games),
+          games: sortByPosition(games),
         });
       }
     }
