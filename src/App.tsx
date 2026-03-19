@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useBracketState, BracketContext } from './hooks/useBracketState';
 import { useTeamRatings } from './hooks/useTeamRatings';
 import { useLiveScores } from './hooks/useLiveScores';
@@ -21,10 +21,30 @@ function AppContent() {
   const settingsState = useSettings();
   const [showSettings, setShowSettings] = useState(false);
   const [showBracketFill, setShowBracketFill] = useState(false);
-  // Default to table on small screens, but allow switching to bracket (tabbed)
-  const [view, setView] = useState<'bracket' | 'table' | 'scores'>(() =>
-    window.innerWidth < 1024 ? 'table' : 'bracket'
-  );
+
+  // View state synced with URL hash
+  type View = 'bracket' | 'table' | 'scores';
+  const VALID_VIEWS = new Set<View>(['bracket', 'table', 'scores']);
+
+  const getViewFromHash = (): View => {
+    const hash = window.location.hash.replace('#', '') as View;
+    if (VALID_VIEWS.has(hash)) return hash;
+    return window.innerWidth < 1024 ? 'table' : 'bracket';
+  };
+
+  const [view, setViewState] = useState<View>(getViewFromHash);
+
+  const setView = useCallback((v: View) => {
+    setViewState(v);
+    window.location.hash = v;
+  }, []);
+
+  // Sync on back/forward navigation
+  useEffect(() => {
+    const onHashChange = () => setViewState(getViewFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   // Load Torvik ratings on mount
   const { error: ratingsError } = useTeamRatings({ state, dispatch });
