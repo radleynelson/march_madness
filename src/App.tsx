@@ -7,6 +7,7 @@ import { usePreviewState, PreviewContext } from './hooks/usePreview';
 import { useSettings, SettingsContext } from './hooks/useSettings';
 import { Header } from './components/Header/Header';
 import { Bracket } from './components/Bracket/Bracket';
+import { MobileBracket } from './components/MobileBracket/MobileBracket';
 import { TableView } from './components/Table/TableView';
 import { GamesCarousel } from './components/Table/GamesCarousel';
 import { MatchupPreview } from './components/Preview/MatchupPreview';
@@ -41,6 +42,7 @@ function AppContent() {
 
   const [view, setViewState] = useState<View>(getViewFromHash);
   const [gameEventId, setGameEventId] = useState<string | null>(getGameEventIdFromHash);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
   const setView = useCallback((v: View) => {
     setViewState(v);
@@ -58,6 +60,13 @@ function AppContent() {
     };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  // Track mobile breakpoint
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   // Load Torvik ratings on mount
@@ -136,7 +145,9 @@ function AppContent() {
                 </div>
               )}
               {view === 'bracket' ? (
-                <Bracket state={state} onUserAdvance={userAdvance} />
+                isMobile
+                  ? <MobileBracket state={state} />
+                  : <Bracket state={state} onUserAdvance={userAdvance} />
               ) : view === 'scores' ? (
                 <Scoreboard state={state} />
               ) : (

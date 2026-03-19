@@ -1,0 +1,291 @@
+/* ─── Container ───────────────────────────────────── */
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 12px 40px;
+}
+
+/* ─── Round Tabs ──────────────────────────────────── */
+
+.tabBar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg-secondary, #f5f5f5);
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  padding: 10px 0;
+  margin: 0 -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.tabScroller {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+
+.tabScroller::-webkit-scrollbar {
+  display: none;
+}
+
+.tabBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary, #111);
+  letter-spacing: 0.3px;
+}
+
+.tabBtn:hover {
+  border-color: #999;
+  background: #fafafa;
+}
+
+.tabBtnActive {
+  background: #1a1a2e;
+  color: #fff;
+  border-color: #1a1a2e;
+}
+
+.tabBtnActive:hover {
+  background: #2a2a40;
+  border-color: #2a2a40;
+}
+
+/* ─── Region Header ──────────────────────────────── */
+
+.regionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0 8px;
+}
+
+.regionName {
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-primary, #111);
+}
+
+.regionBar {
+  flex: 1;
+  height: 2px;
+  border-radius: 1px;
+  opacity: 0.4;
+}
+
+/* ─── Game Card ───────────────────────────────────── */
+
+.card {
+  background: #fff;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  margin-bottom: 8px;
+}
+
+.card:active {
+  background: #fafafa;
+}
+
+.cardLive {
+  border-color: #e53935;
+  border-width: 1.5px;
+  box-shadow: 0 0 0 1px rgba(229, 57, 53, 0.1);
+}
+
+.cardFinal {
+  opacity: 0.75;
+}
+
+.cardFinal:active {
+  opacity: 1;
+}
+
+/* Card header */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cardStatus {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.liveDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e53935;
+  animation: pulse 1.5s ease infinite;
+  flex-shrink: 0;
+}
+
+.statusLive {
+  color: #e53935;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.statusFinal {
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statusScheduled {
+  color: #555;
+}
+
+.cardRegion {
+  font-size: 10px;
+  font-weight: 600;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Team row */
+.teamRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+}
+
+.teamRow:first-of-type {
+  padding-top: 8px;
+}
+
+.teamRow:last-of-type {
+  padding-bottom: 8px;
+}
+
+.teamWinner {
+  font-weight: 800;
+}
+
+.teamLoser {
+  opacity: 0.45;
+}
+
+.teamLogo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  flex-shrink: 0;
+}
+
+.teamSeed {
+  font-size: 11px;
+  font-weight: 700;
+  color: #999;
+  min-width: 16px;
+  text-align: right;
+}
+
+.teamName {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #111);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.teamScore {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary, #111);
+  min-width: 28px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.teamProb {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  min-width: 30px;
+  text-align: right;
+}
+
+.winnerCheck {
+  font-size: 14px;
+  color: #2e7d32;
+  font-weight: 800;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Probability bar */
+.probBar {
+  display: flex;
+  height: 4px;
+  margin: 0 10px 6px;
+  border-radius: 2px;
+  overflow: hidden;
+  gap: 1px;
+}
+
+.probBarFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* ─── Empty / TBD ─────────────────────────────────── */
+
+.emptyCard {
+  background: #fafafa;
+  border: 1px dashed var(--border-color, #e0e0e0);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  color: #aaa;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* ─── Animations ──────────────────────────────────── */
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
