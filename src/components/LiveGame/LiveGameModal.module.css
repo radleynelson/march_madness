@@ -367,6 +367,7 @@
   border-radius: 50%;
   background: #f0f0f0;
   flex-shrink: 0;
+  object-fit: cover;
 }
 
 .leaderInfo {
