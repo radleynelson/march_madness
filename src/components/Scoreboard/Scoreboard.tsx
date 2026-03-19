@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { BracketState, Matchup } from '../../types/bracket';
 import type { EspnEvent } from '../../types/espn';
 import { fetchScoreboard, filterTournamentGames } from '../../api/espn';

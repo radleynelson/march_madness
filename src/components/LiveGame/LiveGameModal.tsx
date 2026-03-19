@@ -23,11 +23,6 @@ function ensureHash(color: string): string {
   return color.startsWith('#') ? color : `#${color}`;
 }
 
-function formatPeriod(period: number): string {
-  if (period === 1) return '1st Half';
-  if (period === 2) return '2nd Half';
-  return `OT${period - 2}`;
-}
 
 function formatPeriodShort(period: number): string {
   if (!period || isNaN(period)) return '';
@@ -657,20 +652,14 @@ function BoxScoreTab({
 
 function PlayByPlayTab({
   plays,
-  summary,
   homeTeamId,
   homeColor,
   awayColor,
-  homeAbbr,
-  awayAbbr,
 }: {
   plays: EspnPlay[];
-  summary: EspnGameSummaryResponse;
   homeTeamId: string;
   homeColor: string;
   awayColor: string;
-  homeAbbr: string;
-  awayAbbr: string;
 }) {
   const [filterPeriod, setFilterPeriod] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -762,7 +751,6 @@ function LiveOdds({ summary }: { summary: EspnGameSummaryResponse }) {
 
   const pick = picks[0]; // Use first provider (usually DraftKings)
   const liveSpreadHome = pick.pointSpread?.home?.live;
-  const liveSpreadAway = pick.pointSpread?.away?.live;
   const liveTotal = pick.total?.over?.live;
   const liveMLHome = pick.moneyline?.home?.live;
   const liveMLAway = pick.moneyline?.away?.live;
@@ -929,12 +917,9 @@ export function LiveGameModal({ matchup, onClose }: LiveGameModalProps) {
               {activeTab === 'plays' && (
                 <PlayByPlayTab
                   plays={plays}
-                  summary={summary}
                   homeTeamId={homeTeamId}
                   homeColor={homeColor}
                   awayColor={awayColor}
-                  homeAbbr={homeAbbr}
-                  awayAbbr={awayAbbr}
                 />
               )}
             </div>
