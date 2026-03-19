@@ -920,31 +920,115 @@
 /* ─── Responsive ──────────────────────────────────── */
 
 @media (max-width: 600px) {
+  /* Full-screen modal on mobile */
+  .overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
   .modal {
     max-width: 100%;
-    border-radius: 10px;
+    max-height: 100vh;
+    border-radius: 0;
   }
 
   .scoreboard {
-    border-radius: 10px 10px 0 0;
+    border-radius: 0;
+  }
+
+  /* Compact scoreboard */
+  .scoreboardTop {
+    padding: 6px 12px 0;
+  }
+
+  .gameNote {
+    font-size: 9px;
   }
 
   .scoreboardMain {
-    gap: 8px;
-    padding: 10px 12px;
+    gap: 6px;
+    padding: 8px 10px;
   }
 
   .scoreLogo {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
+    padding: 3px;
   }
 
-  .scoreValue {
-    font-size: 28px;
+  .scoreTeamInfo {
+    min-width: 0;
   }
 
   .scoreTeamName {
+    font-size: 11px;
+  }
+
+  .scoreTeamRecord {
+    font-size: 10px;
+  }
+
+  .scoreValue {
+    font-size: 26px;
+    min-width: 32px;
+  }
+
+  .scoreSeed {
+    font-size: 10px;
+  }
+
+  .scoreClock {
+    padding: 0 4px;
+  }
+
+  .clockTime {
+    font-size: 14px;
+  }
+
+  .clockPeriod {
+    font-size: 10px;
+  }
+
+  /* Compact line scores */
+  .lineScores {
+    padding: 2px 10px 6px;
+  }
+
+  .lineScoreTable th,
+  .lineScoreTable td {
+    padding: 1px 6px;
+    font-size: 10px;
+  }
+
+  /* Tabs */
+  .tabBar {
+    padding: 0 10px;
+  }
+
+  .tabBtn {
+    padding: 8px 12px;
     font-size: 12px;
+  }
+
+  /* Section titles */
+  .sectionTitle {
+    padding: 10px 14px 6px;
+    font-size: 10px;
+  }
+
+  /* Win prob */
+  .winProbLabels {
+    padding: 0 14px;
+    font-size: 12px;
+  }
+
+  .winProbSvg {
+    padding: 0 6px;
+  }
+
+  /* Leaders */
+  .leadersGrid {
+    padding: 0 14px;
   }
 
   .leaderRow {
@@ -953,15 +1037,113 @@
   }
 
   .leaderHeadshot {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .leaderName {
+    font-size: 11px;
   }
 
   .leaderValue {
     font-size: 16px;
   }
 
+  .leaderStatLabel {
+    font-size: 9px;
+    min-width: 48px;
+  }
+
+  .leaderSummary {
+    font-size: 9px;
+  }
+
+  /* Team stats */
+  .teamStatsHeader {
+    padding: 0 14px 4px;
+  }
+
+  .statRow {
+    padding: 2px 14px;
+    gap: 6px;
+  }
+
+  .statValue {
+    width: 36px;
+    font-size: 11px;
+  }
+
+  .statLabel {
+    font-size: 9px;
+    min-width: 55px;
+  }
+
+  /* Odds */
+  .oddsGrid {
+    padding: 0 14px;
+    gap: 10px;
+    font-size: 11px;
+  }
+
+  /* Recent plays */
+  .playsList {
+    padding: 0 14px;
+  }
+
+  .playItem {
+    gap: 8px;
+    font-size: 11px;
+  }
+
+  /* Box score */
+  .boxScoreTeamTabs {
+    padding: 0 14px 10px;
+  }
+
+  .boxScoreTableWrap {
+    padding: 0 6px;
+  }
+
+  .boxScoreTable {
+    font-size: 10px;
+  }
+
+  .boxScoreTable th {
+    font-size: 9px;
+    padding: 4px 4px;
+  }
+
+  .boxScoreTable td {
+    padding: 4px 4px;
+  }
+
+  .boxPlayerCol {
+    min-width: 90px;
+    padding-left: 8px !important;
+  }
+
+  /* Play-by-play */
+  .pbpFilters {
+    padding: 0 14px 8px;
+  }
+
+  .pbpHeader {
+    padding: 0 14px 4px;
+  }
+
+  .pbpList {
+    padding: 0 8px;
+  }
+
+  .pbpItem {
+    padding: 5px 6px;
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  /* Footer */
   .footer {
-    border-radius: 0 0 10px 10px;
+    border-radius: 0;
+    padding: 8px 14px;
   }
 }
