@@ -453,7 +453,7 @@ export interface EspnPlay {
   scoringPlay: boolean;
   shootingPlay: boolean;
   scoreValue: number;
-  team?: { id: string };
+  team?: { id?: string; $ref?: string };
   wallclock: string;
   coordinate?: { x: number; y: number };
 }

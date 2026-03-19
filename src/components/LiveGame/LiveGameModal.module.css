@@ -869,6 +869,85 @@
   font-size: 12px;
 }
 
+/* ─── Shot Chart ──────────────────────────────────── */
+
+.shotChartSection {
+  padding-bottom: 12px;
+}
+
+.shotChartFilters {
+  display: flex;
+  gap: 6px;
+  padding: 0 20px 8px;
+}
+
+.shotChartFilterBtn {
+  padding: 4px 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  transition: all 0.15s;
+}
+
+.shotChartFilterBtn:hover {
+  border-color: #bbb;
+}
+
+.shotChartFilterActive {
+  background: #333;
+  color: #fff;
+  border-color: #333;
+}
+
+.shotChartLegend {
+  display: flex;
+  gap: 14px;
+  padding: 0 20px 6px;
+  font-size: 11px;
+  color: #888;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.shotChartSvg {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 12px;
+}
+
+.shotChartStats {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 20px 0;
+}
+
+.shotStatTeam {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.shotStatLabel {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.shotStatValue {
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+}
+
 /* ─── Footer ──────────────────────────────────────── */
 
 .footer {
@@ -1189,6 +1268,28 @@
 
   .boxDnp .boxPlayerCol {
     background: #fff;
+  }
+
+  /* Shot chart */
+  .shotChartFilters {
+    padding: 0 14px 6px;
+  }
+
+  .shotChartLegend {
+    padding: 0 14px 4px;
+    font-size: 10px;
+  }
+
+  .shotChartSvg {
+    padding: 0 6px;
+  }
+
+  .shotChartStats {
+    padding: 8px 14px 0;
+  }
+
+  .shotStatValue {
+    font-size: 10px;
   }
 
   /* Play-by-play */

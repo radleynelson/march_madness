@@ -9,7 +9,7 @@ import type {
 } from '../../api/espn';
 import styles from './LiveGameModal.module.css';
 
-type Tab = 'gamecast' | 'boxscore' | 'plays';
+type Tab = 'gamecast' | 'boxscore' | 'plays' | 'shotchart';
 
 interface LiveGameModalProps {
   matchup: Matchup;
@@ -746,6 +746,196 @@ function PlayByPlayTab({
   );
 }
 
+// ─── Shot Chart ───────────────────────────────────────────
+
+/** Extract team ID from play's team field (handles both id and $ref patterns) */
+function getPlayTeamId(play: EspnPlay): string | null {
+  if (!play.team) return null;
+  if (play.team.id) return play.team.id;
+  if (play.team.$ref) {
+    const match = play.team.$ref.match(/teams\/(\d+)/);
+    return match ? match[1] : null;
+  }
+  return null;
+}
+
+function ShotChart({
+  plays,
+  homeTeamId,
+  awayTeamId,
+  homeColor,
+  awayColor,
+  homeAbbr,
+  awayAbbr,
+}: {
+  plays: EspnPlay[];
+  homeTeamId: string;
+  awayTeamId: string;
+  homeColor: string;
+  awayColor: string;
+  homeAbbr: string;
+  awayAbbr: string;
+}) {
+  const [teamFilter, setTeamFilter] = useState<'all' | 'home' | 'away'>('all');
+
+  // Filter to shooting plays with valid coordinates, excluding free throws (type 540)
+  const shots = plays.filter(p => {
+    if (!p.shootingPlay) return false;
+    if (p.type?.id === '540') return false; // free throws
+    if (!p.coordinate || (p.coordinate.x === 25 && p.coordinate.y === 0)) return false;
+    const teamId = getPlayTeamId(p);
+    if (teamFilter === 'home' && teamId !== homeTeamId) return false;
+    if (teamFilter === 'away' && teamId !== awayTeamId) return false;
+    return true;
+  });
+
+  // Stats
+  const homeShots = shots.filter(s => getPlayTeamId(s) === homeTeamId);
+  const awayShots = shots.filter(s => getPlayTeamId(s) === awayTeamId);
+  const homeMade = homeShots.filter(s => s.scoringPlay).length;
+  const awayMade = awayShots.filter(s => s.scoringPlay).length;
+  const home3 = homeShots.filter(s => s.scoreValue === 3);
+  const away3 = awayShots.filter(s => s.scoreValue === 3);
+  const home3Made = home3.filter(s => s.scoringPlay).length;
+  const away3Made = away3.filter(s => s.scoringPlay).length;
+
+  // Court dimensions in ESPN coordinate space
+  // x: 0-50 (court width), y: 0 at basket, increasing toward halfcourt
+  const courtW = 50;
+  const courtH = 28;
+  const svgPad = 2;
+  const viewW = courtW + svgPad * 2;
+  const viewH = courtH + svgPad * 2;
+  const ox = svgPad; // offset x
+  const oy = svgPad; // offset y
+
+  // Three-point arc: 22.15 feet from basket center at (25, ~1)
+  const basketX = 25;
+  const basketY = 1;
+  const threeR = 22.15;
+  // Arc from left baseline to right baseline
+  const arcStartX = basketX - threeR;
+  const arcEndX = basketX + threeR;
+
+  return (
+    <div className={styles.shotChartSection}>
+      <div className={styles.sectionTitle}>Shot Chart</div>
+
+      {/* Team filter */}
+      <div className={styles.shotChartFilters}>
+        <button
+          className={`${styles.shotChartFilterBtn} ${teamFilter === 'all' ? styles.shotChartFilterActive : ''}`}
+          onClick={() => setTeamFilter('all')}
+        >
+          Both
+        </button>
+        <button
+          className={`${styles.shotChartFilterBtn} ${teamFilter === 'away' ? styles.shotChartFilterActive : ''}`}
+          style={teamFilter === 'away' ? { background: ensureHash(awayColor), borderColor: ensureHash(awayColor) } : undefined}
+          onClick={() => setTeamFilter('away')}
+        >
+          {awayAbbr}
+        </button>
+        <button
+          className={`${styles.shotChartFilterBtn} ${teamFilter === 'home' ? styles.shotChartFilterActive : ''}`}
+          style={teamFilter === 'home' ? { background: ensureHash(homeColor), borderColor: ensureHash(homeColor) } : undefined}
+          onClick={() => setTeamFilter('home')}
+        >
+          {homeAbbr}
+        </button>
+      </div>
+
+      {/* Legend */}
+      <div className={styles.shotChartLegend}>
+        <span className={styles.legendItem}>
+          <svg width="12" height="12"><circle cx="6" cy="6" r="4" fill={ensureHash(awayColor)} /></svg>
+          Made
+        </span>
+        <span className={styles.legendItem}>
+          <svg width="12" height="12"><circle cx="6" cy="6" r="4" fill="none" stroke={ensureHash(awayColor)} strokeWidth="1.5" /></svg>
+          Missed
+        </span>
+      </div>
+
+      {/* Court SVG */}
+      <svg viewBox={`0 0 ${viewW} ${viewH}`} className={styles.shotChartSvg}>
+        {/* Court background */}
+        <rect x={ox} y={oy} width={courtW} height={courtH} fill="#f8f4ee" rx={0.5} />
+
+        {/* Paint / lane */}
+        <rect x={ox + 19} y={oy} width={12} height={15.5} fill="none" stroke="#d4c8b4" strokeWidth={0.3} />
+
+        {/* Free throw circle */}
+        <circle cx={ox + 25} cy={oy + 15.5} r={6} fill="none" stroke="#d4c8b4" strokeWidth={0.3} />
+
+        {/* Three-point arc */}
+        <path
+          d={`M ${ox + Math.max(0, arcStartX)} ${oy + 0} A ${threeR} ${threeR} 0 0 0 ${ox + Math.min(courtW, arcEndX)} ${oy + 0}`}
+          fill="none" stroke="#d4c8b4" strokeWidth={0.3}
+        />
+
+        {/* Restricted area arc (4ft radius) */}
+        <path
+          d={`M ${ox + 21} ${oy + 0} A 4 4 0 0 0 ${ox + 29} ${oy + 0}`}
+          fill="none" stroke="#d4c8b4" strokeWidth={0.3}
+        />
+
+        {/* Basket */}
+        <circle cx={ox + basketX} cy={oy + basketY} r={0.6} fill="none" stroke="#c0a080" strokeWidth={0.3} />
+
+        {/* Backboard */}
+        <line x1={ox + 22} y1={oy + 0} x2={ox + 28} y2={oy + 0} stroke="#c0a080" strokeWidth={0.4} />
+
+        {/* Shots */}
+        {shots.map(shot => {
+          const teamId = getPlayTeamId(shot);
+          const isHome = teamId === homeTeamId;
+          const color = ensureHash(isHome ? homeColor : awayColor);
+          const x = ox + (shot.coordinate?.x ?? 25);
+          const y = oy + (shot.coordinate?.y ?? 10);
+          const r = shot.scoreValue === 3 ? 0.9 : 0.7;
+
+          return shot.scoringPlay ? (
+            <circle
+              key={shot.id}
+              cx={x}
+              cy={y}
+              r={r}
+              fill={color}
+              opacity={0.85}
+            />
+          ) : (
+            <circle
+              key={shot.id}
+              cx={x}
+              cy={y}
+              r={r}
+              fill="none"
+              stroke={color}
+              strokeWidth={0.35}
+              opacity={0.7}
+            />
+          );
+        })}
+      </svg>
+
+      {/* Shooting stats */}
+      <div className={styles.shotChartStats}>
+        <div className={styles.shotStatTeam}>
+          <span className={styles.shotStatLabel} style={{ color: ensureHash(awayColor) }}>{awayAbbr}</span>
+          <span className={styles.shotStatValue}>FG: {awayMade}/{awayShots.length}</span>
+          <span className={styles.shotStatValue}>3PT: {away3Made}/{away3.length}</span>
+        </div>
+        <div className={styles.shotStatTeam}>
+          <span className={styles.shotStatLabel} style={{ color: ensureHash(homeColor) }}>{homeAbbr}</span>
+          <span className={styles.shotStatValue}>FG: {homeMade}/{homeShots.length}</span>
+          <span className={styles.shotStatValue}>3PT: {home3Made}/{home3.length}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Live Odds Section ────────────────────────────────────
 
 function LiveOdds({ summary }: { summary: EspnGameSummaryResponse }) {
@@ -870,13 +1060,13 @@ export function LiveGameModal({ matchup, onClose, fullPage = false }: LiveGameMo
 
           {/* Tab navigation */}
           <div className={styles.tabBar}>
-            {(['gamecast', 'boxscore', 'plays'] as Tab[]).map(tab => (
+            {(['gamecast', 'boxscore', 'plays', 'shotchart'] as Tab[]).map(tab => (
               <button
                 key={tab}
                 className={`${styles.tabBtn} ${activeTab === tab ? styles.tabBtnActive : ''}`}
                 onClick={() => setActiveTab(tab)}
               >
-                {tab === 'gamecast' ? 'Gamecast' : tab === 'boxscore' ? 'Box Score' : 'Play-by-Play'}
+                {tab === 'gamecast' ? 'Gamecast' : tab === 'boxscore' ? 'Box Score' : tab === 'plays' ? 'Play-by-Play' : 'Shots'}
               </button>
             ))}
           </div>
@@ -925,6 +1115,18 @@ export function LiveGameModal({ matchup, onClose, fullPage = false }: LiveGameMo
               <PlayByPlayTab
                 plays={plays}
                 homeTeamId={homeTeamId}
+                homeColor={homeColor}
+                awayColor={awayColor}
+                homeAbbr={homeAbbr}
+                awayAbbr={awayAbbr}
+              />
+            )}
+
+            {activeTab === 'shotchart' && (
+              <ShotChart
+                plays={plays}
+                homeTeamId={homeTeamId}
+                awayTeamId={awayTeamId}
                 homeColor={homeColor}
                 awayColor={awayColor}
                 homeAbbr={homeAbbr}
