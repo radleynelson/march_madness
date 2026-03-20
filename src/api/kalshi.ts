@@ -197,7 +197,7 @@ async function importPrivateKey(pem: string): Promise<CryptoKey> {
  * Sign a Kalshi API request using RSA-PSS with SHA-256.
  * Returns the base64-encoded signature.
  *
- * Message format: `${timestamp}\n${method}\n${path}`
+ * Message format: `${timestamp}${method}${path}` (no separators, no query params)
  */
 async function signRequest(
   privateKey: CryptoKey,
@@ -205,7 +205,9 @@ async function signRequest(
   method: string,
   path: string,
 ): Promise<string> {
-  const message = `${timestamp}\n${method}\n${path}`;
+  // Strip query parameters — Kalshi only signs the path portion
+  const pathOnly = path.split('?')[0];
+  const message = `${timestamp}${method}${pathOnly}`;
   const encoded = new TextEncoder().encode(message);
 
   const signature = await crypto.subtle.sign(
