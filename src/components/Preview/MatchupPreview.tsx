@@ -156,10 +156,12 @@ export function MatchupPreview({ matchup, onClose, fullPage = false }: MatchupPr
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
-    if (!fullPage) {
+    if (fullPage) {
+      window.scrollTo(0, 0);
+    } else {
       document.body.style.overflow = 'hidden';
+      modalRef.current?.scrollTo(0, 0);
     }
-    modalRef.current?.scrollTo(0, 0);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       if (!fullPage) {
