@@ -90,7 +90,7 @@ function AppContent() {
   const hoverState = useHoverState(state);
 
   // Kalshi prediction markets
-  const kalshiState = useKalshiMarkets(state);
+  const kalshiState = useKalshiMarkets(state, settingsState.settings.kalshiKeyId, settingsState.settings.kalshiPrivateKey);
 
   // Preview modal state
   const previewState = usePreviewState();

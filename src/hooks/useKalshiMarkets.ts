@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback, createContext, useContext } f
 import type { BracketState, Matchup } from '../types/bracket';
 import type { KalshiGameMarket, KalshiMatchupData, KalshiFuturesMarket, KalshiPosition } from '../types/kalshi';
 import { fetchGameWinnerMarkets, fetchChampionshipFutures, fetchPositions } from '../api/kalshi';
-import { useSettingsContext } from './useSettings';
 
 /** A user's position on a specific matchup, matched to a bracket game */
 export interface MatchupPosition {
@@ -215,13 +214,10 @@ function matchPositions(
 const POLL_INTERVAL = 30_000; // 30 seconds (Kalshi CDN caches for 15s)
 const FUTURES_INTERVAL = 5 * 60_000; // 5 minutes for futures (less volatile)
 
-export function useKalshiMarkets(state: BracketState): KalshiState {
+export function useKalshiMarkets(state: BracketState, kalshiKeyId: string, kalshiPrivateKey: string): KalshiState {
   const [kalshiState, setKalshiState] = useState<KalshiState>(INITIAL_STATE);
   const matchupsRef = useRef(state.matchups);
   matchupsRef.current = state.matchups;
-  const { settings } = useSettingsContext();
-  const kalshiKeyId = settings.kalshiKeyId;
-  const kalshiPrivateKey = settings.kalshiPrivateKey;
   const hasKalshiCreds = kalshiKeyId.length > 0 && kalshiPrivateKey.length > 0;
 
   // Keep a ref to the latest matchupMarkets for position matching
@@ -232,6 +228,7 @@ export function useKalshiMarkets(state: BracketState): KalshiState {
     try {
       const markets = await fetchGameWinnerMarkets();
       const matched = matchMarkets(markets, matchupsRef.current);
+      matchupMarketsRef.current = matched;
       setKalshiState(prev => ({
         ...prev,
         matchupMarkets: matched,
@@ -274,44 +271,39 @@ export function useKalshiMarkets(state: BracketState): KalshiState {
     }
   }, [hasKalshiCreds, kalshiKeyId, kalshiPrivateKey]);
 
+  // Combined fetch: games first, then positions (needs market data for matching)
+  const fetchGamesAndPositions = useCallback(async () => {
+    await fetchGames();
+    if (hasKalshiCreds) {
+      await fetchUserPositions();
+    }
+  }, [fetchGames, fetchUserPositions, hasKalshiCreds]);
+
   // Initial fetch + polling
   useEffect(() => {
-    fetchGames();
+    fetchGamesAndPositions();
     fetchFutures();
 
-    const gameInterval = setInterval(fetchGames, POLL_INTERVAL);
+    const gameInterval = setInterval(fetchGamesAndPositions, POLL_INTERVAL);
     const futuresInterval = setInterval(fetchFutures, FUTURES_INTERVAL);
 
     return () => {
       clearInterval(gameInterval);
       clearInterval(futuresInterval);
     };
-  }, [fetchGames, fetchFutures]);
+  }, [fetchGamesAndPositions, fetchFutures]);
 
-  // Positions polling — separate effect so it reacts to credential changes
+  // Clear positions when credentials are removed
   useEffect(() => {
     if (!hasKalshiCreds) {
-      // Clear positions when credentials are removed
       setKalshiState(prev => ({
         ...prev,
         positions: new Map(),
         positionsLoading: false,
         positionsError: null,
       }));
-      return;
     }
-
-    // Wait for market data to be loaded before fetching positions
-    // (we need it for matching tickers to matchups)
-    if (!kalshiState.loaded) return;
-
-    fetchUserPositions();
-    const posInterval = setInterval(fetchUserPositions, POLL_INTERVAL);
-
-    return () => {
-      clearInterval(posInterval);
-    };
-  }, [hasKalshiCreds, fetchUserPositions, kalshiState.loaded]);
+  }, [hasKalshiCreds]);
 
   return kalshiState;
 }
