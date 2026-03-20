@@ -109,7 +109,7 @@ function GameCard({
   event: EspnEvent;
   matchup: Matchup | null;
   onOpen: (matchupId: string) => void;
-  kalshiPrices: { top: number; bottom: number; volume: number } | null;
+  kalshiPrices: { top: number; bottom: number; topName: string; bottomName: string; volume: number } | null;
 }) {
   const comp = event.competitions[0];
   if (!comp) return null;
@@ -288,8 +288,10 @@ function GameCard({
       {kalshiPrices && kalshiPrices.volume > 0 && (
         <div className={styles.kalshiRow}>
           <span className={styles.kalshiBadge}>Kalshi</span>
+          <span className={styles.kalshiTeam}>{kalshiPrices.topName}</span>
           <span className={styles.kalshiPrice}>{Math.round(kalshiPrices.top * 100)}¢</span>
           <span className={styles.kalshiSep}>-</span>
+          <span className={styles.kalshiTeam}>{kalshiPrices.bottomName}</span>
           <span className={styles.kalshiPrice}>{Math.round(kalshiPrices.bottom * 100)}¢</span>
           <span className={styles.kalshiVol}>{formatVolume(kalshiPrices.volume)}</span>
         </div>
@@ -413,12 +415,16 @@ export function Scoreboard({ state }: ScoreboardProps) {
             const m = eventMatchups.get(event.id) ?? null;
             const kd = m ? kalshi.matchupMarkets.get(m.id) : undefined;
             const competitors = event.competitions[0]?.competitors;
-            let kalshiPrices: { top: number; bottom: number; volume: number } | null = null;
+            let kalshiPrices: { top: number; bottom: number; topName: string; bottomName: string; volume: number } | null = null;
             if (kd && m && competitors && competitors.length >= 2) {
               const comp1IsTop = competitors[0].team.id === m.topTeam?.id;
+              const topAbbr = competitors[0].team.shortDisplayName || competitors[0].team.location || '';
+              const bottomAbbr = competitors[1].team.shortDisplayName || competitors[1].team.location || '';
               kalshiPrices = {
                 top: comp1IsTop ? kd.topMarket.price : kd.bottomMarket.price,
                 bottom: comp1IsTop ? kd.bottomMarket.price : kd.topMarket.price,
+                topName: topAbbr,
+                bottomName: bottomAbbr,
                 volume: kd.totalVolume,
               };
             }
