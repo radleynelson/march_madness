@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#0f3460"/>
+    </linearGradient>
+    <linearGradient id="ball-grad" x1="0.2" y1="0.1" x2="0.8" y2="0.9">
+      <stop offset="0%" stop-color="#ffA030"/>
+      <stop offset="45%" stop-color="#f08000"/>
+      <stop offset="100%" stop-color="#c45e00"/>
+    </linearGradient>
+    <filter id="ball-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#ff8c00" flood-opacity="0.35"/>
+    </filter>
+    <filter id="bracket-glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#fff" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="108" ry="108" fill="url(#bg)"/>
+
+  <!-- LEFT BRACKET - bolder, bigger, more visible -->
+  <g filter="url(#bracket-glow)">
+    <!-- Round 1 top pair -->
+    <line x1="52" y1="100" x2="130" y2="100" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="52" y1="168" x2="130" y2="168" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="130" y1="100" x2="130" y2="168" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="130" y1="134" x2="188" y2="134" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+
+    <!-- Round 1 bottom pair -->
+    <line x1="52" y1="236" x2="130" y2="236" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="52" y1="304" x2="130" y2="304" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="130" y1="236" x2="130" y2="304" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="130" y1="270" x2="188" y2="270" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+
+    <!-- Round 2 connector -->
+    <line x1="188" y1="134" x2="188" y2="270" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="188" y1="202" x2="232" y2="202" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+  </g>
+
+  <!-- RIGHT BRACKET -->
+  <g filter="url(#bracket-glow)">
+    <!-- Round 1 top pair -->
+    <line x1="460" y1="100" x2="382" y2="100" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="460" y1="168" x2="382" y2="168" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="382" y1="100" x2="382" y2="168" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="382" y1="134" x2="324" y2="134" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+
+    <!-- Round 1 bottom pair -->
+    <line x1="460" y1="236" x2="382" y2="236" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="460" y1="304" x2="382" y2="304" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="382" y1="236" x2="382" y2="304" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="382" y1="270" x2="324" y2="270" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+
+    <!-- Round 2 connector -->
+    <line x1="324" y1="134" x2="324" y2="270" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+    <line x1="324" y1="202" x2="280" y2="202" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85"/>
+  </g>
+
+  <!-- BASKETBALL centered where brackets converge -->
+  <g filter="url(#ball-shadow)">
+    <!-- Ball body -->
+    <circle cx="256" cy="330" r="95" fill="url(#ball-grad)"/>
+    <!-- Seam lines -->
+    <path d="M161,330 Q208,300 256,330 Q304,360 351,330" fill="none" stroke="#8B4513" stroke-width="4" stroke-opacity="0.55"/>
+    <path d="M256,235 Q228,282 256,330 Q284,378 256,425" fill="none" stroke="#8B4513" stroke-width="4" stroke-opacity="0.55"/>
+    <path d="M190,252 Q218,290 206,342 Q194,394 190,412" fill="none" stroke="#8B4513" stroke-width="3.5" stroke-opacity="0.4"/>
+    <path d="M322,252 Q294,290 306,342 Q318,394 322,412" fill="none" stroke="#8B4513" stroke-width="3.5" stroke-opacity="0.4"/>
+    <!-- Highlight -->
+    <ellipse cx="228" cy="296" rx="28" ry="18" fill="#ffffff" opacity="0.2" transform="rotate(-30,228,296)"/>
+  </g>
+
+  <!-- Connector lines from bracket ends down to ball -->
+  <line x1="232" y1="202" x2="216" y2="248" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-opacity="0.6"/>
+  <line x1="280" y1="202" x2="296" y2="248" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-opacity="0.6"/>
+
+  <!-- "MADNESS" text -->
+  <text x="256" y="468" text-anchor="middle" font-family="system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="44" font-weight="800" letter-spacing="8" fill="#ffffff" opacity="0.92">MADNESS</text>
+</svg>
