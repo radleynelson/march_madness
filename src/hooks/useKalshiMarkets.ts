@@ -201,7 +201,7 @@ function matchPositions(
         ticker: pos.ticker,
         side: match.side,
         teamName: match.teamName,
-        contracts: pos.market_exposure,
+        contracts: Math.round(parseFloat(pos.position_fp || '0')),
         currentPrice: match.price,
       });
     }
