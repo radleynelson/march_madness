@@ -44,6 +44,8 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
       const isMobile = window.innerWidth <= 600;
       if (isMobile && (status === 'in_progress' || status === 'final') && matchup.espnEventId) {
         window.location.hash = 'game/' + matchup.espnEventId;
+      } else if (isMobile) {
+        window.location.hash = 'preview/' + matchup.id;
       } else {
         openPreview(matchup.id);
       }

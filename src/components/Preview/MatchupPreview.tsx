@@ -50,6 +50,7 @@ function useEspnOdds(eventId: string | null): EspnOdds | null {
 interface MatchupPreviewProps {
   matchup: Matchup;
   onClose: () => void;
+  fullPage?: boolean;
 }
 
 function getProfile(team: Team): TeamProfile | null {
@@ -142,7 +143,7 @@ function TeamColumn({ team, prob, profile, odds, kalshiFuture }: {
   );
 }
 
-export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
+export function MatchupPreview({ matchup, onClose, fullPage = false }: MatchupPreviewProps) {
   const { topTeam, bottomTeam } = matchup;
   const modalRef = useRef<HTMLDivElement>(null);
   const kalshi = useKalshiContext();
@@ -155,14 +156,17 @@ export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
-    // Scroll modal to top on open
+    if (!fullPage) {
+      document.body.style.overflow = 'hidden';
+    }
     modalRef.current?.scrollTo(0, 0);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
+      if (!fullPage) {
+        document.body.style.overflow = '';
+      }
     };
-  }, [handleKeyDown]);
+  }, [handleKeyDown, fullPage]);
 
   if (!topTeam || !bottomTeam) return null;
 
@@ -188,21 +192,23 @@ export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
   const topFuture = findFuture(topTeam);
   const bottomFuture = findFuture(bottomTeam);
 
-  return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} ref={modalRef} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className={styles.header}>
-          <div className={styles.headerTitle}>
-            <img className={styles.headerLogo} src={topTeam.logoUrl} alt="" width={28} height={28}
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-            {topTeam.shortName}
-            <span className={styles.vsText}>vs</span>
-            {bottomTeam.shortName}
-            <img className={styles.headerLogo} src={bottomTeam.logoUrl} alt="" width={28} height={28}
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-          </div>
-          <button className={styles.closeBtn} onClick={onClose} aria-label="Close">&times;</button>
+  const overlayClass = fullPage ? styles.overlayFullPage : styles.overlay;
+  const modalClass = fullPage ? styles.modalFullPage : styles.modal;
+
+  const content = (
+    <div className={modalClass} ref={modalRef} onClick={fullPage ? undefined : (e) => e.stopPropagation()}>
+      {/* Header */}
+      <div className={styles.header}>
+        <div className={styles.headerTitle}>
+          <img className={styles.headerLogo} src={topTeam.logoUrl} alt="" width={28} height={28}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          {topTeam.shortName}
+          <span className={styles.vsText}>vs</span>
+          {bottomTeam.shortName}
+          <img className={styles.headerLogo} src={bottomTeam.logoUrl} alt="" width={28} height={28}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+        </div>
+        <button className={styles.closeBtn} onClick={onClose} aria-label="Close">{fullPage ? '←' : '×'}</button>
         </div>
 
         {/* Probability Bar */}
@@ -359,9 +365,16 @@ export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
             <span className={styles.modelLabel}>Model:</span>{' '}
             Elo-derived logistic (AdjEM, 30.464 K-factor)
           </span>
-          <span>Click outside or press Esc to close</span>
+          {!fullPage && <span>Click outside or press Esc to close</span>}
         </div>
       </div>
+  );
+
+  if (fullPage) return content;
+
+  return (
+    <div className={overlayClass} onClick={onClose}>
+      {content}
     </div>
   );
 }

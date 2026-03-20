@@ -376,6 +376,45 @@
   }
 }
 
+/* Full-page variant (mobile) */
+.overlayFullPage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fff;
+}
+
+.modalFullPage {
+  background: #fff;
+  border-radius: 0;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  overflow-y: auto;
+  box-shadow: none;
+}
+
+.modalFullPage .header {
+  border-radius: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.modalFullPage .footer {
+  border-radius: 0;
+}
+
+.modalFullPage .teamsGrid {
+  grid-template-columns: 1fr;
+}
+
+.modalFullPage .teamCol:first-child {
+  border-right: none;
+  border-bottom: 1px solid #f0f0f0;
+}
+
 @media (max-width: 700px) {
   .teamsGrid {
     grid-template-columns: 1fr;

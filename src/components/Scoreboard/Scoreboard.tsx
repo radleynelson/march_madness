@@ -170,6 +170,8 @@ function GameCard({
     const isMobile = window.innerWidth <= 600;
     if (isMobile && (statusState === 'in' || statusState === 'post') && matchup.espnEventId) {
       window.location.hash = 'game/' + matchup.espnEventId;
+    } else if (isMobile) {
+      window.location.hash = 'preview/' + matchup.id;
     } else {
       onOpen(matchup.id);
     }

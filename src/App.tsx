@@ -35,6 +35,13 @@ function AppContent() {
     return match ? match[1] : null;
   };
 
+  /** Parse a `#preview/{matchupId}` hash and return the matchupId, or null */
+  const getPreviewMatchupIdFromHash = (): string | null => {
+    const hash = window.location.hash.replace('#', '');
+    const match = hash.match(/^preview\/(.+)$/);
+    return match ? match[1] : null;
+  };
+
   const getViewFromHash = (): View => {
     const hash = window.location.hash.replace('#', '') as View;
     if (VALID_VIEWS.has(hash)) return hash;
@@ -43,6 +50,7 @@ function AppContent() {
 
   const [view, setViewState] = useState<View>(getViewFromHash);
   const [gameEventId, setGameEventId] = useState<string | null>(getGameEventIdFromHash);
+  const [previewMatchupId, setPreviewMatchupId] = useState<string | null>(getPreviewMatchupIdFromHash);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
   const setView = useCallback((v: View) => {
@@ -54,8 +62,10 @@ function AppContent() {
   useEffect(() => {
     const onHashChange = () => {
       const eventId = getGameEventIdFromHash();
+      const prevId = getPreviewMatchupIdFromHash();
       setGameEventId(eventId);
-      if (!eventId) {
+      setPreviewMatchupId(prevId);
+      if (!eventId && !prevId) {
         setViewState(getViewFromHash());
       }
     };
@@ -98,9 +108,35 @@ function AppContent() {
       })()
     : null;
 
-  const closeFullPageGame = useCallback(() => {
+  // Find matchup for the full-page preview route (mobile #preview/{matchupId})
+  const fullPagePreviewMatchup = previewMatchupId
+    ? state.matchups.get(previewMatchupId) ?? null
+    : null;
+
+  const closeFullPage = useCallback(() => {
     window.history.back();
   }, []);
+
+  // If a full-page preview route is active on mobile, render only the preview
+  if (previewMatchupId && fullPagePreviewMatchup) {
+    return (
+      <SettingsContext.Provider value={settingsState}>
+        <BracketContext.Provider value={{ state, dispatch }}>
+          <KalshiContext.Provider value={kalshiState}>
+            <HoverContext.Provider value={hoverState}>
+              <PreviewContext.Provider value={previewState}>
+                <MatchupPreview
+                  matchup={fullPagePreviewMatchup}
+                  onClose={closeFullPage}
+                  fullPage
+                />
+              </PreviewContext.Provider>
+            </HoverContext.Provider>
+          </KalshiContext.Provider>
+        </BracketContext.Provider>
+      </SettingsContext.Provider>
+    );
+  }
 
   // If a full-page game route is active on mobile, render only the game view
   if (gameEventId && fullPageGameMatchup) {
@@ -112,7 +148,7 @@ function AppContent() {
               <PreviewContext.Provider value={previewState}>
                 <LiveGameModal
                   matchup={fullPageGameMatchup}
-                  onClose={closeFullPageGame}
+                  onClose={closeFullPage}
                   fullPage
                 />
               </PreviewContext.Provider>
