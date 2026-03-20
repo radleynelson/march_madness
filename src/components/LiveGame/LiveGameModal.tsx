@@ -994,6 +994,7 @@ function LiveOdds({ summary }: { summary: EspnGameSummaryResponse }) {
 function KalshiLiveMarket({ matchup }: { matchup: Matchup }) {
   const kalshi = useKalshiContext();
   const kd = kalshi.matchupMarkets.get(matchup.id);
+  const position = kalshi.positions.get(matchup.id);
   if (!kd) return null;
 
   return (
@@ -1018,6 +1019,16 @@ function KalshiLiveMarket({ matchup }: { matchup: Matchup }) {
           <span>24h: {formatVolume(kd.totalVolume24h)}</span>
         </div>
       </div>
+      {position && (
+        <div className={styles.kalshiPositionRow}>
+          <span className={styles.kalshiPositionLabel}>Your Position:</span>
+          <span className={styles.kalshiPositionValue}>
+            {position.contracts > 0 ? position.contracts : Math.abs(position.contracts)}{' '}
+            {position.contracts > 0 ? 'YES' : 'NO'}{' '}
+            {position.teamName} @ {Math.round(position.currentPrice * 100)}¢
+          </span>
+        </div>
+      )}
     </div>
   );
 }

@@ -10,12 +10,18 @@ export interface AISettings {
   provider: 'cli' | 'api' | null;
   /** Whether AI features should be shown */
   aiEnabled: boolean;
+  /** Kalshi API key ID */
+  kalshiKeyId: string;
+  /** Kalshi RSA private key (PEM format) */
+  kalshiPrivateKey: string;
 }
 
 interface SettingsContextType {
   settings: AISettings;
   setApiKey: (key: string) => void;
   clearApiKey: () => void;
+  setKalshiCredentials: (keyId: string, privateKey: string) => void;
+  clearKalshiCredentials: () => void;
 }
 
 const defaultSettings: AISettings = {
@@ -23,12 +29,16 @@ const defaultSettings: AISettings = {
   cliAvailable: false,
   provider: null,
   aiEnabled: false,
+  kalshiKeyId: '',
+  kalshiPrivateKey: '',
 };
 
 export const SettingsContext = createContext<SettingsContextType>({
   settings: defaultSettings,
   setApiKey: () => {},
   clearApiKey: () => {},
+  setKalshiCredentials: () => {},
+  clearKalshiCredentials: () => {},
 });
 
 export function useSettingsContext() {
@@ -39,9 +49,13 @@ export function useSettings(): SettingsContextType {
   const [settings, setSettings] = useState<AISettings>(() => {
     // Load API key from localStorage on init
     const stored = localStorage.getItem('mm_api_key');
+    const kalshiKeyId = localStorage.getItem('mm_kalshi_key_id') ?? '';
+    const kalshiPrivateKey = localStorage.getItem('mm_kalshi_private_key') ?? '';
     return {
       ...defaultSettings,
       apiKey: stored ?? '',
+      kalshiKeyId,
+      kalshiPrivateKey,
     };
   });
 
@@ -82,5 +96,25 @@ export function useSettings(): SettingsContextType {
     }));
   }, []);
 
-  return { settings, setApiKey, clearApiKey };
+  const setKalshiCredentials = useCallback((keyId: string, privateKey: string) => {
+    localStorage.setItem('mm_kalshi_key_id', keyId);
+    localStorage.setItem('mm_kalshi_private_key', privateKey);
+    setSettings(prev => ({
+      ...prev,
+      kalshiKeyId: keyId,
+      kalshiPrivateKey: privateKey,
+    }));
+  }, []);
+
+  const clearKalshiCredentials = useCallback(() => {
+    localStorage.removeItem('mm_kalshi_key_id');
+    localStorage.removeItem('mm_kalshi_private_key');
+    setSettings(prev => ({
+      ...prev,
+      kalshiKeyId: '',
+      kalshiPrivateKey: '',
+    }));
+  }, []);
+
+  return { settings, setApiKey, clearApiKey, setKalshiCredentials, clearKalshiCredentials };
 }

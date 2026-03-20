@@ -7,8 +7,10 @@ interface SettingsProps {
 }
 
 export function Settings({ onClose }: SettingsProps) {
-  const { settings, setApiKey, clearApiKey } = useSettingsContext();
+  const { settings, setApiKey, clearApiKey, setKalshiCredentials, clearKalshiCredentials } = useSettingsContext();
   const [inputKey, setInputKey] = useState(settings.apiKey);
+  const [kalshiKeyId, setKalshiKeyId] = useState(settings.kalshiKeyId);
+  const [kalshiPk, setKalshiPk] = useState(settings.kalshiPrivateKey);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -26,6 +28,16 @@ export function Settings({ onClose }: SettingsProps) {
     setInputKey('');
     clearApiKey();
   }, [clearApiKey]);
+
+  const handleSaveKalshi = useCallback(() => {
+    setKalshiCredentials(kalshiKeyId.trim(), kalshiPk.trim());
+  }, [kalshiKeyId, kalshiPk, setKalshiCredentials]);
+
+  const handleClearKalshi = useCallback(() => {
+    setKalshiKeyId('');
+    setKalshiPk('');
+    clearKalshiCredentials();
+  }, [clearKalshiCredentials]);
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -83,6 +95,42 @@ export function Settings({ onClose }: SettingsProps) {
               Enter your API key from console.anthropic.com to enable AI features. Your key is only sent directly to Anthropic.
               {settings.cliAvailable && ' Since Claude CLI is available, AI features will use your Max subscription by default.'}
               {' '}By entering an API key, you acknowledge that you are responsible for all usage and billing associated with your Anthropic account.
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <div className={styles.sectionTitle}>Kalshi API Key (read-only)</div>
+            <div className={styles.statusRow}>
+              <span className={`${styles.statusDot} ${settings.kalshiKeyId ? styles.statusActive : styles.statusInactive}`} />
+              <span className={styles.statusLabel}>Kalshi Positions</span>
+              <span className={styles.statusValue}>
+                {settings.kalshiKeyId ? 'Connected' : 'Not configured'}
+              </span>
+            </div>
+            <div className={styles.inputGroup}>
+              <input
+                className={styles.input}
+                type="text"
+                placeholder="Key ID"
+                value={kalshiKeyId}
+                onChange={e => setKalshiKeyId(e.target.value)}
+              />
+            </div>
+            <textarea
+              className={styles.textarea}
+              placeholder="RSA Private Key (PEM format)"
+              value={kalshiPk}
+              onChange={e => setKalshiPk(e.target.value)}
+              rows={4}
+            />
+            <div className={styles.inputGroup} style={{ marginTop: 8 }}>
+              <button className={styles.saveBtn} onClick={handleSaveKalshi}>Save</button>
+              {settings.kalshiKeyId && (
+                <button className={styles.clearBtn} onClick={handleClearKalshi}>Clear</button>
+              )}
+            </div>
+            <div className={styles.hint}>
+              Add your Kalshi API key to see your positions on games. Your key is stored locally on this device and is only used to sign requests. The private key never leaves your browser.
             </div>
           </div>
         </div>

@@ -53,3 +53,14 @@ export interface KalshiFuturesMarket {
   volume: number;
   openInterest: number;
 }
+
+/** A single position from the Kalshi portfolio API */
+export interface KalshiPosition {
+  ticker: string;
+  market_exposure: number;
+  total_traded: number;
+  realized_pnl: number;
+  resting_orders_count: number;
+  /** Fees paid */
+  fees_paid?: number;
+}

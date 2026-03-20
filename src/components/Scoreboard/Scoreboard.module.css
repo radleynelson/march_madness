@@ -385,6 +385,42 @@
   color: #999;
 }
 
+/* ─── Position Row ───────────────────────────────── */
+
+.positionRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 12px 8px;
+  font-size: 10px;
+}
+
+.positionLabel {
+  font-weight: 600;
+  color: #7c3aed;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.positionContracts {
+  font-weight: 800;
+  color: #5b21b6;
+  font-variant-numeric: tabular-nums;
+}
+
+.positionTeam {
+  font-weight: 600;
+  color: #555;
+}
+
+.positionPrice {
+  font-weight: 700;
+  color: #7c3aed;
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+}
+
 /* ─── States ──────────────────────────────────────── */
 
 .loadingState {

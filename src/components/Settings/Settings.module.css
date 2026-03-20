@@ -120,6 +120,25 @@
   box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
 }
 
+.textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  resize: vertical;
+  margin-top: 8px;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+}
+
 .saveBtn {
   padding: 8px 16px;
   background: #8b5cf6;

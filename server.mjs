@@ -32,7 +32,7 @@ function setCorsHeaders(req, res) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, KALSHI-ACCESS-KEY, KALSHI-ACCESS-SIGNATURE, KALSHI-ACCESS-TIMESTAMP');
 }
 
 // ---------------------------------------------------------------------------
@@ -441,11 +441,23 @@ const server = createServer(async (req, res) => {
     const kalshiPath = req.url.replace(/^\/api\/kalshi/, '');
     const kalshiUrl = `https://api.elections.kalshi.com${kalshiPath}`;
     try {
-      const kalshiResp = await fetch(kalshiUrl);
+      // Forward Kalshi auth headers if present
+      const fetchHeaders = { 'Accept': 'application/json' };
+      const kalshiKey = req.headers['kalshi-access-key'];
+      const kalshiSig = req.headers['kalshi-access-signature'];
+      const kalshiTs = req.headers['kalshi-access-timestamp'];
+      if (kalshiKey && kalshiSig && kalshiTs) {
+        fetchHeaders['KALSHI-ACCESS-KEY'] = kalshiKey;
+        fetchHeaders['KALSHI-ACCESS-SIGNATURE'] = kalshiSig;
+        fetchHeaders['KALSHI-ACCESS-TIMESTAMP'] = kalshiTs;
+      }
+
+      const kalshiResp = await fetch(kalshiUrl, { headers: fetchHeaders });
       const body = await kalshiResp.text();
+      const isAuthed = !!kalshiKey;
       res.writeHead(kalshiResp.status, {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=15',
+        'Cache-Control': isAuthed ? 'no-store' : 'public, max-age=15',
       });
       res.end(body);
     } catch (err) {

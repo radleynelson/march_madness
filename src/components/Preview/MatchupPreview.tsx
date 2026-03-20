@@ -148,6 +148,7 @@ export function MatchupPreview({ matchup, onClose, fullPage = false }: MatchupPr
   const modalRef = useRef<HTMLDivElement>(null);
   const kalshi = useKalshiContext();
   const kalshiData = kalshi.matchupMarkets.get(matchup.id) ?? null;
+  const kalshiPosition = kalshi.positions.get(matchup.id) ?? null;
 
   // Close on Escape
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -348,6 +349,16 @@ export function MatchupPreview({ matchup, onClose, fullPage = false }: MatchupPr
                   <span className={styles.oddsValue}>{formatVolume(kalshiData.totalVolume24h)}</span>
                 </div>
               </div>
+              {kalshiPosition && (
+                <div className={styles.kalshiPosition}>
+                  <span className={styles.kalshiPositionLabel}>Your Position:</span>
+                  <span className={styles.kalshiPositionValue}>
+                    {kalshiPosition.contracts > 0 ? kalshiPosition.contracts : Math.abs(kalshiPosition.contracts)}{' '}
+                    {kalshiPosition.contracts > 0 ? 'YES' : 'NO'}{' '}
+                    {kalshiPosition.teamName} @ {Math.round(kalshiPosition.currentPrice * 100)}¢
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>

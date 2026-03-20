@@ -1,7 +1,22 @@
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 import type { BracketState, Matchup } from '../types/bracket';
-import type { KalshiGameMarket, KalshiMatchupData, KalshiFuturesMarket } from '../types/kalshi';
-import { fetchGameWinnerMarkets, fetchChampionshipFutures } from '../api/kalshi';
+import type { KalshiGameMarket, KalshiMatchupData, KalshiFuturesMarket, KalshiPosition } from '../types/kalshi';
+import { fetchGameWinnerMarkets, fetchChampionshipFutures, fetchPositions } from '../api/kalshi';
+import { useSettingsContext } from './useSettings';
+
+/** A user's position on a specific matchup, matched to a bracket game */
+export interface MatchupPosition {
+  /** The market ticker (e.g., KXNCAAMBGAME-...) */
+  ticker: string;
+  /** Which team in the matchup the position is on ('top' or 'bottom') */
+  side: 'top' | 'bottom';
+  /** Team name from the Kalshi market */
+  teamName: string;
+  /** Number of contracts (positive = YES, negative = NO) */
+  contracts: number;
+  /** Current market price for this side (0-1) */
+  currentPrice: number;
+}
 
 interface KalshiState {
   /** Map from bracket matchupId → Kalshi market data */
@@ -12,6 +27,12 @@ interface KalshiState {
   loaded: boolean;
   /** Last successful fetch time */
   lastUpdated: Date | null;
+  /** Map from bracket matchupId → user's position on this game */
+  positions: Map<string, MatchupPosition>;
+  /** Whether positions are being loaded */
+  positionsLoading: boolean;
+  /** Error message for positions fetch, if any */
+  positionsError: string | null;
 }
 
 const INITIAL_STATE: KalshiState = {
@@ -19,6 +40,9 @@ const INITIAL_STATE: KalshiState = {
   futures: [],
   loaded: false,
   lastUpdated: null,
+  positions: new Map(),
+  positionsLoading: false,
+  positionsError: null,
 };
 
 // ─── Name matching ────────────────────────────────────────
@@ -143,6 +167,49 @@ function matchMarkets(
   return result;
 }
 
+/**
+ * Match user positions to bracket matchups using market ticker and the
+ * already-matched market data.
+ */
+function matchPositions(
+  rawPositions: KalshiPosition[],
+  matchupMarkets: Map<string, KalshiMatchupData>,
+): Map<string, MatchupPosition> {
+  const result = new Map<string, MatchupPosition>();
+
+  // Build a reverse map from market ticker → (matchupId, side)
+  const tickerMap = new Map<string, { matchupId: string; side: 'top' | 'bottom'; teamName: string; price: number }>();
+  for (const [matchupId, kd] of matchupMarkets) {
+    tickerMap.set(kd.topMarket.ticker, {
+      matchupId,
+      side: 'top',
+      teamName: kd.topMarket.teamName,
+      price: kd.topMarket.price,
+    });
+    tickerMap.set(kd.bottomMarket.ticker, {
+      matchupId,
+      side: 'bottom',
+      teamName: kd.bottomMarket.teamName,
+      price: kd.bottomMarket.price,
+    });
+  }
+
+  for (const pos of rawPositions) {
+    const match = tickerMap.get(pos.ticker);
+    if (match) {
+      result.set(match.matchupId, {
+        ticker: pos.ticker,
+        side: match.side,
+        teamName: match.teamName,
+        contracts: pos.market_exposure,
+        currentPrice: match.price,
+      });
+    }
+  }
+
+  return result;
+}
+
 // ─── Hook ─────────────────────────────────────────────────
 
 const POLL_INTERVAL = 30_000; // 30 seconds (Kalshi CDN caches for 15s)
@@ -152,6 +219,14 @@ export function useKalshiMarkets(state: BracketState): KalshiState {
   const [kalshiState, setKalshiState] = useState<KalshiState>(INITIAL_STATE);
   const matchupsRef = useRef(state.matchups);
   matchupsRef.current = state.matchups;
+  const { settings } = useSettingsContext();
+  const kalshiKeyId = settings.kalshiKeyId;
+  const kalshiPrivateKey = settings.kalshiPrivateKey;
+  const hasKalshiCreds = kalshiKeyId.length > 0 && kalshiPrivateKey.length > 0;
+
+  // Keep a ref to the latest matchupMarkets for position matching
+  const matchupMarketsRef = useRef(kalshiState.matchupMarkets);
+  matchupMarketsRef.current = kalshiState.matchupMarkets;
 
   const fetchGames = useCallback(async () => {
     try {
@@ -177,6 +252,28 @@ export function useKalshiMarkets(state: BracketState): KalshiState {
     }
   }, []);
 
+  const fetchUserPositions = useCallback(async () => {
+    if (!hasKalshiCreds) return;
+    try {
+      setKalshiState(prev => ({ ...prev, positionsLoading: prev.positions.size === 0 }));
+      const rawPositions = await fetchPositions(kalshiKeyId, kalshiPrivateKey);
+      const matched = matchPositions(rawPositions, matchupMarketsRef.current);
+      setKalshiState(prev => ({
+        ...prev,
+        positions: matched,
+        positionsLoading: false,
+        positionsError: null,
+      }));
+    } catch (err) {
+      console.warn('Kalshi positions fetch failed:', err);
+      setKalshiState(prev => ({
+        ...prev,
+        positionsLoading: false,
+        positionsError: err instanceof Error ? err.message : 'Failed to fetch positions',
+      }));
+    }
+  }, [hasKalshiCreds, kalshiKeyId, kalshiPrivateKey]);
+
   // Initial fetch + polling
   useEffect(() => {
     fetchGames();
@@ -190,6 +287,31 @@ export function useKalshiMarkets(state: BracketState): KalshiState {
       clearInterval(futuresInterval);
     };
   }, [fetchGames, fetchFutures]);
+
+  // Positions polling — separate effect so it reacts to credential changes
+  useEffect(() => {
+    if (!hasKalshiCreds) {
+      // Clear positions when credentials are removed
+      setKalshiState(prev => ({
+        ...prev,
+        positions: new Map(),
+        positionsLoading: false,
+        positionsError: null,
+      }));
+      return;
+    }
+
+    // Wait for market data to be loaded before fetching positions
+    // (we need it for matching tickers to matchups)
+    if (!kalshiState.loaded) return;
+
+    fetchUserPositions();
+    const posInterval = setInterval(fetchUserPositions, POLL_INTERVAL);
+
+    return () => {
+      clearInterval(posInterval);
+    };
+  }, [hasKalshiCreds, fetchUserPositions, kalshiState.loaded]);
 
   return kalshiState;
 }

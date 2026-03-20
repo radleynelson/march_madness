@@ -5,6 +5,7 @@ import { fetchScoreboard, filterTournamentGames } from '../../api/espn';
 import { TOURNAMENT_DATES, ALL_TOURNAMENT_DATES } from '../../data/constants';
 import { usePreviewContext } from '../../hooks/usePreview';
 import { useKalshiContext } from '../../hooks/useKalshiMarkets';
+import type { MatchupPosition } from '../../hooks/useKalshiMarkets';
 import { formatVolume } from '../../api/kalshi';
 import styles from './Scoreboard.module.css';
 
@@ -105,11 +106,13 @@ function GameCard({
   matchup,
   onOpen,
   kalshiPrices,
+  position,
 }: {
   event: EspnEvent;
   matchup: Matchup | null;
   onOpen: (matchupId: string) => void;
   kalshiPrices: { top: number; bottom: number; topName: string; bottomName: string; volume: number } | null;
+  position: MatchupPosition | null;
 }) {
   const comp = event.competitions[0];
   if (!comp) return null;
@@ -298,6 +301,19 @@ function GameCard({
           <span className={styles.kalshiVol}>{formatVolume(kalshiPrices.volume)}</span>
         </div>
       )}
+
+      {/* User's Kalshi position */}
+      {position && (
+        <div className={styles.positionRow}>
+          <span className={styles.positionLabel}>Your position:</span>
+          <span className={styles.positionContracts}>
+            {position.contracts > 0 ? position.contracts : Math.abs(position.contracts)}{' '}
+            {position.contracts > 0 ? 'YES' : 'NO'}
+          </span>
+          <span className={styles.positionTeam}>{position.teamName}</span>
+          <span className={styles.positionPrice}>@ {Math.round(position.currentPrice * 100)}¢</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -430,6 +446,7 @@ export function Scoreboard({ state }: ScoreboardProps) {
                 volume: kd.totalVolume,
               };
             }
+            const pos = m ? kalshi.positions.get(m.id) ?? null : null;
             return (
               <GameCard
                 key={event.id}
@@ -437,6 +454,7 @@ export function Scoreboard({ state }: ScoreboardProps) {
                 matchup={m}
                 onOpen={openPreview}
                 kalshiPrices={kalshiPrices}
+                position={pos}
               />
             );
           })}
