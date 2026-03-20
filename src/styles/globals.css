@@ -24,8 +24,25 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* PWA safe area: dark bar behind iOS status bar in standalone mode */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body::before {
+    content: '';
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top, 0px);
+    background: #1a1a2e;
+    z-index: 9999;
+    pointer-events: none;
+  }
+}
+
 #root {
   min-height: 100vh;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 img {
