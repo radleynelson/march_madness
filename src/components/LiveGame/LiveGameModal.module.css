@@ -1085,6 +1085,7 @@
 
 .modalFullPage .scoreboard {
   border-radius: 0;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .modalFullPage .footer {
