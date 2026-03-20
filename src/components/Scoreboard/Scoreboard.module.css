@@ -340,6 +340,45 @@
   color: #777;
 }
 
+/* ─── Kalshi Row ─────────────────────────────────── */
+
+.kalshiRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px 8px;
+  font-size: 11px;
+}
+
+.kalshiBadge {
+  font-size: 8px;
+  font-weight: 800;
+  color: #fff;
+  background: #16a34a;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.kalshiPrice {
+  font-weight: 700;
+  color: #166534;
+  font-variant-numeric: tabular-nums;
+}
+
+.kalshiSep {
+  color: #aaa;
+  font-size: 10px;
+}
+
+.kalshiVol {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  color: #999;
+}
+
 /* ─── States ──────────────────────────────────────── */
 
 .loadingState {

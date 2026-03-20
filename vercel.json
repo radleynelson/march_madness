@@ -3,6 +3,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/api/ai/(.*)", "destination": "/api/ai/$1" },
+    { "source": "/api/kalshi/(.*)", "destination": "/api/kalshi" },
     { "source": "/api/torvik/(.*)", "destination": "/api/torvik" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

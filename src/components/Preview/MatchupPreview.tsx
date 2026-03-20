@@ -6,6 +6,9 @@ import { TEAM_ODDS, MATCHUP_LINES } from '../../data/team-odds';
 import type { MatchupLine } from '../../data/team-odds';
 import { winProbability } from '../../model/predictions';
 import { fetchGameSummary } from '../../api/espn';
+import { useKalshiContext } from '../../hooks/useKalshiMarkets';
+import type { KalshiFuturesMarket } from '../../types/kalshi';
+import { formatVolume, priceToAmericanOdds } from '../../api/kalshi';
 import { AIChat } from './AIChat';
 import styles from './MatchupPreview.module.css';
 
@@ -64,11 +67,12 @@ function formatPct(p: number): string {
   return `${Math.round(pct)}%`;
 }
 
-function TeamColumn({ team, prob, profile, odds }: {
+function TeamColumn({ team, prob, profile, odds, kalshiFuture }: {
   team: Team;
   prob: number;
   profile: TeamProfile | null;
   odds: TeamOdds | null;
+  kalshiFuture: KalshiFuturesMarket | null;
 }) {
   return (
     <div className={styles.teamCol}>
@@ -121,13 +125,19 @@ function TeamColumn({ team, prob, profile, odds }: {
       )}
 
       {/* Championship Odds */}
-      {odds && (
+      {kalshiFuture ? (
+        <div className={styles.champOdds}>
+          <span className={styles.champOddsLabel}>Title (Kalshi):</span>
+          <span className={styles.champOddsValue}>{priceToAmericanOdds(kalshiFuture.price)}</span>
+          <span className={styles.champOddsLabel}>({formatPct(kalshiFuture.price)})</span>
+        </div>
+      ) : odds ? (
         <div className={styles.champOdds}>
           <span className={styles.champOddsLabel}>Championship Odds:</span>
           <span className={styles.champOddsValue}>{odds.championshipOdds}</span>
           <span className={styles.champOddsLabel}>({formatPct(odds.impliedProb)})</span>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -135,6 +145,8 @@ function TeamColumn({ team, prob, profile, odds }: {
 export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
   const { topTeam, bottomTeam } = matchup;
   const modalRef = useRef<HTMLDivElement>(null);
+  const kalshi = useKalshiContext();
+  const kalshiData = kalshi.matchupMarkets.get(matchup.id) ?? null;
 
   // Close on Escape
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -164,6 +176,17 @@ export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
   const bottomOdds = getOdds(bottomTeam);
   const line: MatchupLine | null = MATCHUP_LINES[matchup.id] ?? null;
   const espnOdds = useEspnOdds(matchup.espnEventId);
+
+  // Find Kalshi championship futures for each team
+  const findFuture = (team: Team): KalshiFuturesMarket | null => {
+    const name = team.shortName.toLowerCase();
+    return kalshi.futures.find(f => {
+      const fn = f.teamName.toLowerCase();
+      return fn.includes(name) || name.includes(fn);
+    }) ?? null;
+  };
+  const topFuture = findFuture(topTeam);
+  const bottomFuture = findFuture(bottomTeam);
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -269,12 +292,62 @@ export function MatchupPreview({ matchup, onClose }: MatchupPreviewProps) {
               </div>
             )}
           </div>
+
+          {/* Kalshi Prediction Market */}
+          {kalshiData && (
+            <div className={styles.kalshiSection}>
+              <div className={styles.kalshiHeader}>
+                <span className={styles.kalshiTitle}>Kalshi Prediction Market</span>
+                <span className={styles.kalshiLive}>LIVE</span>
+              </div>
+              <div className={styles.probBar}>
+                <div
+                  className={styles.probBarLeft}
+                  style={{
+                    width: `${Math.max(kalshiData.topMarket.price * 100, 8)}%`,
+                    background: topTeam.primaryColor,
+                    opacity: 0.7,
+                  }}
+                >
+                  {Math.round(kalshiData.topMarket.price * 100)}¢
+                </div>
+                <div
+                  className={styles.probBarRight}
+                  style={{
+                    width: `${Math.max(kalshiData.bottomMarket.price * 100, 8)}%`,
+                    background: bottomTeam.primaryColor,
+                    opacity: 0.7,
+                  }}
+                >
+                  {Math.round(kalshiData.bottomMarket.price * 100)}¢
+                </div>
+              </div>
+              <div className={styles.kalshiDetails}>
+                <div className={styles.kalshiOddsItem}>
+                  <span className={styles.oddsLabel}>{topTeam.shortName}:</span>
+                  <span className={styles.oddsValue}>{priceToAmericanOdds(kalshiData.topMarket.price)}</span>
+                </div>
+                <div className={styles.kalshiOddsItem}>
+                  <span className={styles.oddsLabel}>{bottomTeam.shortName}:</span>
+                  <span className={styles.oddsValue}>{priceToAmericanOdds(kalshiData.bottomMarket.price)}</span>
+                </div>
+                <div className={styles.kalshiOddsItem}>
+                  <span className={styles.oddsLabel}>Volume:</span>
+                  <span className={styles.oddsValue}>{formatVolume(kalshiData.totalVolume)}</span>
+                </div>
+                <div className={styles.kalshiOddsItem}>
+                  <span className={styles.oddsLabel}>24h:</span>
+                  <span className={styles.oddsValue}>{formatVolume(kalshiData.totalVolume24h)}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Two-column team previews */}
         <div className={styles.teamsGrid}>
-          <TeamColumn team={topTeam} prob={topWinProb} profile={topProfile} odds={topOdds} />
-          <TeamColumn team={bottomTeam} prob={bottomWinProb} profile={bottomProfile} odds={bottomOdds} />
+          <TeamColumn team={topTeam} prob={topWinProb} profile={topProfile} odds={topOdds} kalshiFuture={topFuture} />
+          <TeamColumn team={bottomTeam} prob={bottomWinProb} profile={bottomProfile} odds={bottomOdds} kalshiFuture={bottomFuture} />
         </div>
 
         {/* AI Chat - only shown when AI is enabled */}

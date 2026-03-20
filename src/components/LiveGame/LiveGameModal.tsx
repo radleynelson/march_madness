@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Matchup } from '../../types/bracket';
+import { useKalshiContext } from '../../hooks/useKalshiMarkets';
+import { formatVolume, priceToAmericanOdds } from '../../api/kalshi';
 import { useLiveGame } from '../../hooks/useLiveGame';
 import type {
   EspnGameSummaryResponse,
@@ -987,6 +989,39 @@ function LiveOdds({ summary }: { summary: EspnGameSummaryResponse }) {
   );
 }
 
+// ─── Kalshi Live Market ───────────────────────────────────
+
+function KalshiLiveMarket({ matchup }: { matchup: Matchup }) {
+  const kalshi = useKalshiContext();
+  const kd = kalshi.matchupMarkets.get(matchup.id);
+  if (!kd) return null;
+
+  return (
+    <div className={styles.oddsSection}>
+      <div className={styles.sectionTitle}>
+        Kalshi Market
+        <span className={styles.kalshiLiveBadge}>LIVE</span>
+      </div>
+      <div className={styles.kalshiMarketGrid}>
+        <div className={styles.kalshiTeamPrice}>
+          <span className={styles.kalshiTeamName}>{kd.topMarket.teamName}</span>
+          <span className={styles.kalshiPriceValue}>{Math.round(kd.topMarket.price * 100)}¢</span>
+          <span className={styles.kalshiAmOdds}>{priceToAmericanOdds(kd.topMarket.price)}</span>
+        </div>
+        <div className={styles.kalshiTeamPrice}>
+          <span className={styles.kalshiTeamName}>{kd.bottomMarket.teamName}</span>
+          <span className={styles.kalshiPriceValue}>{Math.round(kd.bottomMarket.price * 100)}¢</span>
+          <span className={styles.kalshiAmOdds}>{priceToAmericanOdds(kd.bottomMarket.price)}</span>
+        </div>
+        <div className={styles.kalshiVolInfo}>
+          <span>Vol: {formatVolume(kd.totalVolume)}</span>
+          <span>24h: {formatVolume(kd.totalVolume24h)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Modal ───────────────────────────────────────────
 
 export function LiveGameModal({ matchup, onClose, fullPage = false }: LiveGameModalProps) {
@@ -1090,6 +1125,7 @@ export function LiveGameModal({ matchup, onClose, fullPage = false }: LiveGameMo
                   awayColor={awayColor}
                 />
                 <LiveOdds summary={summary} />
+                <KalshiLiveMarket matchup={matchup} />
                 <TeamStats
                   summary={summary}
                   homeTeamId={homeTeamId}

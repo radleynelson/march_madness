@@ -138,6 +138,72 @@
   color: var(--text-primary);
 }
 
+/* Kalshi prediction market section */
+.kalshiSection {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+}
+
+.kalshiHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.kalshiTitle {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #166534;
+}
+
+.kalshiLive {
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+  background: #16a34a;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  animation: kalshiPulse 2s ease infinite;
+}
+
+@keyframes kalshiPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.kalshiDetails {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.kalshiOddsItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #166534;
+}
+
+.kalshiOddsItem .oddsLabel {
+  font-weight: 600;
+  color: #15803d;
+}
+
+.kalshiOddsItem .oddsValue {
+  font-weight: 800;
+  color: #14532d;
+}
+
 /* Teams section - two columns */
 .teamsGrid {
   display: grid;

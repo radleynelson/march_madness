@@ -4,6 +4,8 @@ import type { EspnEvent } from '../../types/espn';
 import { fetchScoreboard, filterTournamentGames } from '../../api/espn';
 import { TOURNAMENT_DATES, ALL_TOURNAMENT_DATES } from '../../data/constants';
 import { usePreviewContext } from '../../hooks/usePreview';
+import { useKalshiContext } from '../../hooks/useKalshiMarkets';
+import { formatVolume } from '../../api/kalshi';
 import styles from './Scoreboard.module.css';
 
 interface ScoreboardProps {
@@ -102,10 +104,12 @@ function GameCard({
   event,
   matchup,
   onOpen,
+  kalshiPrices,
 }: {
   event: EspnEvent;
   matchup: Matchup | null;
   onOpen: (matchupId: string) => void;
+  kalshiPrices: { top: number; bottom: number; volume: number } | null;
 }) {
   const comp = event.competitions[0];
   if (!comp) return null;
@@ -279,6 +283,17 @@ function GameCard({
           )}
         </div>
       )}
+
+      {/* Kalshi prediction market prices */}
+      {kalshiPrices && kalshiPrices.volume > 0 && (
+        <div className={styles.kalshiRow}>
+          <span className={styles.kalshiBadge}>Kalshi</span>
+          <span className={styles.kalshiPrice}>{Math.round(kalshiPrices.top * 100)}¢</span>
+          <span className={styles.kalshiSep}>-</span>
+          <span className={styles.kalshiPrice}>{Math.round(kalshiPrices.bottom * 100)}¢</span>
+          <span className={styles.kalshiVol}>{formatVolume(kalshiPrices.volume)}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -290,6 +305,7 @@ export function Scoreboard({ state }: ScoreboardProps) {
   const [events, setEvents] = useState<EspnEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const { openPreview } = usePreviewContext();
+  const kalshi = useKalshiContext();
 
   // Fetch ESPN scoreboard for selected date
   useEffect(() => {
@@ -393,14 +409,29 @@ export function Scoreboard({ state }: ScoreboardProps) {
         <div className={styles.emptyState}>No tournament games on this date</div>
       ) : (
         <div className={styles.grid}>
-          {sortedEvents.map(event => (
-            <GameCard
-              key={event.id}
-              event={event}
-              matchup={eventMatchups.get(event.id) ?? null}
-              onOpen={openPreview}
-            />
-          ))}
+          {sortedEvents.map(event => {
+            const m = eventMatchups.get(event.id) ?? null;
+            const kd = m ? kalshi.matchupMarkets.get(m.id) : undefined;
+            const competitors = event.competitions[0]?.competitors;
+            let kalshiPrices: { top: number; bottom: number; volume: number } | null = null;
+            if (kd && m && competitors && competitors.length >= 2) {
+              const comp1IsTop = competitors[0].team.id === m.topTeam?.id;
+              kalshiPrices = {
+                top: comp1IsTop ? kd.topMarket.price : kd.bottomMarket.price,
+                bottom: comp1IsTop ? kd.bottomMarket.price : kd.topMarket.price,
+                volume: kd.totalVolume,
+              };
+            }
+            return (
+              <GameCard
+                key={event.id}
+                event={event}
+                matchup={m}
+                onOpen={openPreview}
+                kalshiPrices={kalshiPrices}
+              />
+            );
+          })}
         </div>
       )}
     </div>

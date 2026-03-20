@@ -523,6 +523,57 @@
   margin-left: auto;
 }
 
+/* Kalshi market section */
+.kalshiLiveBadge {
+  font-size: 9px;
+  font-weight: 800;
+  background: #16a34a;
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+.kalshiMarketGrid {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+  flex-wrap: wrap;
+}
+
+.kalshiTeamPrice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kalshiTeamName {
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+}
+
+.kalshiPriceValue {
+  font-size: 16px;
+  font-weight: 800;
+  color: #166534;
+}
+
+.kalshiAmOdds {
+  font-size: 11px;
+  font-weight: 700;
+  color: #999;
+}
+
+.kalshiVolInfo {
+  display: flex;
+  gap: 12px;
+  font-size: 10px;
+  color: #999;
+  margin-left: auto;
+}
+
 /* ─── Recent Plays ────────────────────────────────── */
 
 .recentPlaysSection {

@@ -436,6 +436,25 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  // ---- Kalshi proxy ----
+  if (req.url.startsWith('/api/kalshi/')) {
+    const kalshiPath = req.url.replace(/^\/api\/kalshi/, '');
+    const kalshiUrl = `https://api.elections.kalshi.com${kalshiPath}`;
+    try {
+      const kalshiResp = await fetch(kalshiUrl);
+      const body = await kalshiResp.text();
+      res.writeHead(kalshiResp.status, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=15',
+      });
+      res.end(body);
+    } catch (err) {
+      console.error('Kalshi proxy error:', err);
+      sendJson(res, 502, { error: 'Kalshi proxy failed' });
+    }
+    return;
+  }
+
   // ---- Static file serving (existing behaviour) ----
   let filePath = join(DIST, url === '/' ? 'index.html' : url);
   if (!existsSync(filePath)) filePath = join(DIST, 'index.html');

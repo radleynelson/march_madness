@@ -17,6 +17,11 @@ export default defineConfig({
         target: 'http://localhost:5198',
         changeOrigin: true,
       },
+      '/api/kalshi': {
+        target: 'https://api.elections.kalshi.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/kalshi/, ''),
+      },
     },
   },
 })
