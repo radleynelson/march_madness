@@ -16,8 +16,8 @@
   border-bottom: 1px solid var(--border-color, #e0e0e0);
   padding: 10px 0;
   margin: 0 -12px;
-  padding-left: 12px;
-  padding-right: 12px;
+  padding-left: calc(12px + env(safe-area-inset-left, 0px));
+  padding-right: calc(12px + env(safe-area-inset-right, 0px));
 }
 
 .tabScroller {

@@ -16,8 +16,8 @@
   border-bottom: 1px solid var(--border-color, #e0e0e0);
   padding: 10px 0;
   margin: 0 -16px;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: calc(16px + env(safe-area-inset-left, 0px));
+  padding-right: calc(16px + env(safe-area-inset-right, 0px));
 }
 
 .dateScroller {
