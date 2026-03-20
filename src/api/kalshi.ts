@@ -134,8 +134,13 @@ export function priceToAmericanOdds(price: number): string {
 /**
  * Parse a PEM-encoded RSA private key and import it as a CryptoKey
  * suitable for RSA-PSS signing with SHA-256.
+ *
+ * Handles both PKCS#8 ("BEGIN PRIVATE KEY") and PKCS#1 ("BEGIN RSA PRIVATE KEY").
+ * Web Crypto only accepts PKCS#8, so PKCS#1 keys are wrapped automatically.
  */
 async function importPrivateKey(pem: string): Promise<CryptoKey> {
+  const isPkcs1 = pem.includes('BEGIN RSA PRIVATE KEY');
+
   // Strip PEM headers/footers and whitespace
   const pemContents = pem
     .replace(/-----BEGIN (?:RSA )?PRIVATE KEY-----/g, '')
@@ -144,14 +149,44 @@ async function importPrivateKey(pem: string): Promise<CryptoKey> {
 
   // Base64 decode to ArrayBuffer
   const binaryStr = atob(pemContents);
-  const bytes = new Uint8Array(binaryStr.length);
+  const pkcs1Bytes = new Uint8Array(binaryStr.length);
   for (let i = 0; i < binaryStr.length; i++) {
-    bytes[i] = binaryStr.charCodeAt(i);
+    pkcs1Bytes[i] = binaryStr.charCodeAt(i);
+  }
+
+  let keyData: ArrayBuffer;
+  if (isPkcs1) {
+    // Wrap PKCS#1 in a PKCS#8 envelope so Web Crypto can import it.
+    // PKCS#8 = SEQUENCE { version, algorithm (rsaEncryption OID), OCTET STRING { pkcs1key } }
+    const pkcs8Header = new Uint8Array([
+      0x30, 0x82, 0x00, 0x00, // SEQUENCE (length placeholder)
+      0x02, 0x01, 0x00,       // INTEGER version = 0
+      0x30, 0x0d,             // SEQUENCE (algorithm identifier)
+        0x06, 0x09,           // OID
+          0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, // rsaEncryption
+        0x05, 0x00,           // NULL (parameters)
+      0x04, 0x82, 0x00, 0x00, // OCTET STRING (length placeholder)
+    ]);
+    const totalLen = pkcs8Header.length + pkcs1Bytes.length;
+    const result = new Uint8Array(totalLen);
+    result.set(pkcs8Header);
+    result.set(pkcs1Bytes, pkcs8Header.length);
+    // Patch outer SEQUENCE length (totalLen - 4 for the tag + length bytes)
+    const outerLen = totalLen - 4;
+    result[2] = (outerLen >> 8) & 0xff;
+    result[3] = outerLen & 0xff;
+    // Patch OCTET STRING length
+    const octetIdx = pkcs8Header.length - 2;
+    result[octetIdx] = (pkcs1Bytes.length >> 8) & 0xff;
+    result[octetIdx + 1] = pkcs1Bytes.length & 0xff;
+    keyData = result.buffer;
+  } else {
+    keyData = pkcs1Bytes.buffer;
   }
 
   return crypto.subtle.importKey(
     'pkcs8',
-    bytes.buffer,
+    keyData,
     { name: 'RSA-PSS', hash: 'SHA-256' },
     false,
     ['sign'],
