@@ -10,7 +10,6 @@ import type {
 // ─── Constants ───────────────────────────────────────────
 
 const GAMBIT_BASE = '/api/espn-bracket';
-const CHALLENGE_ID = 277;
 const POINTS_PER_ROUND: Record<number, number> = {
   1: 10, 2: 20, 3: 40, 4: 80, 5: 160, 6: 320,
 };
