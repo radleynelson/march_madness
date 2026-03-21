@@ -437,7 +437,7 @@ const server = createServer(async (req, res) => {
   }
 
   // ---- ESPN Bracket proxy ----
-  if (req.url.startsWith('/api/espn-bracket/')) {
+  if (req.url.startsWith('/api/espn-bracket')) {
     const espnPath = req.url.replace(/^\/api\/espn-bracket/, '/apis/v1/challenges/277');
     const espnUrl = `https://gambit-api.fantasy.espn.com${espnPath}`;
     try {

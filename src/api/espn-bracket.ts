@@ -65,7 +65,7 @@ let cachedChallenge: EspnChallengeResponse | null = null;
 export async function fetchEspnChallengeProps(): Promise<EspnChallengeResponse> {
   if (cachedChallenge) return cachedChallenge;
 
-  const resp = await fetch(`${GAMBIT_BASE}/challenge?includeAllProps=true`);
+  const resp = await fetch(`${GAMBIT_BASE}?includeAllProps=true`);
   if (!resp.ok) {
     throw new Error(`Failed to fetch ESPN challenge: ${resp.status}`);
   }
