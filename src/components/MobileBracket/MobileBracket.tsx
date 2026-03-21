@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import type { BracketState, Matchup, RoundName, RegionName } from '../../types/bracket';
-import type { EspnBracketPick } from '../../types/espn-bracket';
+import type { EspnBracketPick, EspnBracketData } from '../../types/espn-bracket';
 import { ROUND_LABELS } from '../../types/bracket';
 import { REGION_NAMES, REGION_COLORS } from '../../data/constants';
 import { usePreviewContext } from '../../hooks/usePreview';
@@ -11,67 +11,102 @@ interface MobileBracketProps {
   state: BracketState;
 }
 
-// Short labels for the round tabs
-const SHORT_LABELS: Record<RoundName, string> = {
-  'First Four': 'F4',
-  'Round of 64': 'R64',
-  'Round of 32': 'R32',
-  'Sweet 16': 'S16',
-  'Elite 8': 'E8',
-  'Final Four': 'FF',
-  'Championship': 'CHAMP',
-};
+// ─── Constants ────────────────────────────────────────────
 
-// Rounds to show in tabs (skip First Four)
 const TAB_ROUNDS: RoundName[] = ROUND_LABELS.filter(r => r !== 'First Four');
 
-/** Sort by bracket position (same order as the bracket, top to bottom) */
+const TAB_LABELS: Record<RoundName, string> = {
+  'First Four': 'F4',
+  'Round of 64': 'RD 1',
+  'Round of 32': 'RD 2',
+  'Sweet 16': 'SWEET 16',
+  'Elite 8': 'ELITE 8',
+  'Final Four': 'FINAL 4',
+  'Championship': 'FINAL',
+};
+
+const ROUND_DATE_LABELS: Record<RoundName, string> = {
+  'First Four': 'Mar 17–18',
+  'Round of 64': 'Mar 19–20',
+  'Round of 32': 'Mar 21–22',
+  'Sweet 16': 'Mar 26–27',
+  'Elite 8': 'Mar 28–29',
+  'Final Four': 'Apr 4',
+  'Championship': 'Apr 6',
+};
+
+const ROUND_POINTS: Record<RoundName, number> = {
+  'First Four': 0,
+  'Round of 64': 10,
+  'Round of 32': 20,
+  'Sweet 16': 40,
+  'Elite 8': 80,
+  'Final Four': 160,
+  'Championship': 320,
+};
+
+function ordinal(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
 function sortByPosition(matchups: Matchup[]): Matchup[] {
   return [...matchups].sort((a, b) => a.position - b.position);
 }
 
-// ─── Game Card ────────────────────────────────────────────
+// ─── Bracket Pair Data ────────────────────────────────────
 
-function GameCard({ matchup, espnPick, showMyPicks }: { matchup: Matchup; espnPick: EspnBracketPick | null; showMyPicks: boolean }) {
+interface BracketPairData {
+  games: Matchup[];
+  nextGame: Matchup | null;
+}
+
+// ─── Compact Game Card ────────────────────────────────────
+
+function CompactCard({
+  matchup,
+  espnPick,
+  showMyPicks,
+  isNextRound = false,
+}: {
+  matchup: Matchup;
+  espnPick: EspnBracketPick | null;
+  showMyPicks: boolean;
+  isNextRound?: boolean;
+}) {
   const { openPreview } = usePreviewContext();
-
   const isLive = matchup.status === 'in_progress';
   const isFinal = matchup.status === 'final';
   const isScheduled = matchup.status === 'scheduled';
 
-  // Determine win probabilities
-  let topProb: number | null = null;
-  let bottomProb: number | null = null;
-  if (isScheduled && matchup.topTeam && matchup.bottomTeam) {
-    topProb = matchup.topWinProbability;
-    bottomProb = matchup.bottomWinProbability;
-  } else if (isLive && matchup.liveTopWinProbability !== null) {
-    topProb = matchup.liveTopWinProbability;
-    bottomProb = 1 - matchup.liveTopWinProbability;
-  }
-
-  // Status display
   const isHalftime = matchup.statusDetail?.toLowerCase() === 'halftime'
     || (matchup.clock === '0:00' && matchup.period === 1);
 
   let statusText = '';
+  let statusType: 'live' | 'final' | 'time' = 'time';
+
   if (isLive) {
+    statusType = 'live';
     if (isHalftime) {
-      statusText = 'Halftime';
+      statusText = 'HALF';
     } else {
-      const periodStr = matchup.period === 1 ? '1st'
-        : matchup.period === 2 ? '2nd'
+      const periodStr = matchup.period === 1 ? '1H'
+        : matchup.period === 2 ? '2H'
         : `OT${(matchup.period ?? 3) - 2 || ''}`;
-      statusText = `${matchup.clock || ''} · ${periodStr}`;
+      statusText = `${matchup.clock || ''} ${periodStr}`;
     }
   } else if (isFinal) {
-    statusText = 'Final';
-  } else if (isScheduled && matchup.statusDetail) {
-    // Parse start time from statusDetail
-    statusText = matchup.statusDetail;
+    statusType = 'final';
+    statusText = matchup.period && matchup.period > 2
+      ? `FINAL/OT${matchup.period - 2 || ''}`
+      : 'FINAL';
+  } else {
+    statusText = matchup.statusDetail || '';
   }
 
   const handleClick = () => {
+    if (isNextRound) return;
     if ((isLive || isFinal) && matchup.espnEventId) {
       window.location.hash = 'game/' + matchup.espnEventId;
     } else {
@@ -79,106 +114,149 @@ function GameCard({ matchup, espnPick, showMyPicks }: { matchup: Matchup; espnPi
     }
   };
 
-  // If both teams are null, show TBD card
+  // TBD card
   if (!matchup.topTeam && !matchup.bottomTeam) {
     return (
-      <div className={styles.emptyCard}>
-        TBD
+      <div className={`${styles.card} ${styles.cardEmpty} ${isNextRound ? styles.cardNext : ''}`}>
+        <div className={styles.teamRow}>
+          <span className={styles.teamName} style={{ color: '#bbb' }}>TBD</span>
+        </div>
+        <div className={styles.cardDivider} />
+        <div className={styles.teamRow}>
+          <span className={styles.teamName} style={{ color: '#bbb' }}>TBD</span>
+        </div>
       </div>
     );
   }
 
+  const pickClass = espnPick
+    ? espnPick.result === 'CORRECT' ? styles.pickCorrect
+    : espnPick.result === 'INCORRECT' ? styles.pickIncorrect
+    : styles.pickPending
+    : '';
+
   return (
     <div
-      className={`${styles.card} ${isLive ? styles.cardLive : ''} ${isFinal ? styles.cardFinal : ''}`}
+      className={`${styles.card} ${isLive ? styles.cardLive : ''} ${isFinal ? styles.cardFinal : ''} ${isNextRound ? styles.cardNext : ''} ${showMyPicks && espnPick ? styles.cardHasPick : ''} ${showMyPicks && espnPick ? pickClass : ''}`}
       onClick={handleClick}
-      role="button"
-      tabIndex={0}
+      role={isNextRound ? undefined : 'button'}
+      tabIndex={isNextRound ? undefined : 0}
     >
-      {/* Status header */}
-      <div className={styles.cardHeader}>
-        <div className={styles.cardStatus}>
-          {isLive && (
-            <>
-              <span className={styles.liveDot} />
-              <span className={styles.statusLive}>{statusText}</span>
-            </>
-          )}
-          {isFinal && <span className={styles.statusFinal}>{statusText}</span>}
-          {isScheduled && <span className={styles.statusScheduled}>{statusText || 'Scheduled'}</span>}
+      {/* ESPN pick banner */}
+      {showMyPicks && espnPick && !isNextRound && (
+        <div className={`${styles.pickBanner} ${pickClass}`}>
+          <span className={styles.pickLabel}>PICK</span>
+          <span className={styles.pickTeam}>{espnPick.teamAbbrev}</span>
+          {espnPick.result === 'CORRECT' && <span className={styles.pickIcon}>✓</span>}
+          {espnPick.result === 'INCORRECT' && <span className={styles.pickIcon}>✗</span>}
+          <span className={styles.pickPts}>
+            {espnPick.result === 'CORRECT' ? `+${espnPick.pointValue}` : `${espnPick.pointValue} pts`}
+          </span>
         </div>
-      </div>
+      )}
+
+      {/* Status badge */}
+      {statusText && !isNextRound && (
+        <div className={`${styles.statusBadge} ${statusType === 'live' ? styles.statusLive : statusType === 'final' ? styles.statusFinal : styles.statusTime}`}>
+          {isLive && <span className={styles.liveDot} />}
+          {statusText}
+        </div>
+      )}
 
       {/* Team rows */}
       {[
-        { team: matchup.topTeam, score: matchup.topScore, side: 'top' as const, prob: topProb },
-        { team: matchup.bottomTeam, score: matchup.bottomScore, side: 'bottom' as const, prob: bottomProb },
-      ].map(({ team, score, side, prob }) => {
+        { team: matchup.topTeam, score: matchup.topScore, side: 'top' as const },
+        { team: matchup.bottomTeam, score: matchup.bottomScore, side: 'bottom' as const },
+      ].map(({ team, score, side }, idx) => {
         const isWinner = isFinal && matchup.winner === side;
         const isLoser = isFinal && matchup.winner !== null && matchup.winner !== side;
-        const isPickedTeam = showMyPicks && espnPick && espnPick.side === side;
-
-        if (!team) {
-          return (
-            <div key={side} className={styles.teamRow}>
-              <span className={styles.teamName} style={{ color: '#aaa' }}>TBD</span>
-            </div>
-          );
-        }
+        const isPicked = showMyPicks && espnPick?.side === side;
 
         return (
-          <div
-            key={side}
-            className={`${styles.teamRow} ${isWinner ? styles.teamWinner : ''} ${isLoser ? styles.teamLoser : ''}`}
-          >
-            {isPickedTeam && (
-              <span className={`${styles.pickDot} ${
-                espnPick!.result === 'CORRECT' ? styles.pickCorrect :
-                espnPick!.result === 'INCORRECT' ? styles.pickIncorrect :
-                styles.pickPending
-              }`} />
-            )}
-            <img
-              className={styles.teamLogo}
-              src={team.logoUrl}
-              alt=""
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
-            <span className={styles.teamSeed}>{team.seed}</span>
-            <span className={styles.teamName}>{team.shortName || team.name}</span>
-            {!isScheduled && (
-              <span className={styles.teamScore}>
-                {score !== null ? score : '-'}
-              </span>
-            )}
-            {prob !== null && !isFinal && (
-              <span className={styles.teamProb}>
-                {Math.round(prob * 100)}%
-              </span>
-            )}
-            {isWinner && <span className={styles.winnerCheck}>✓</span>}
+          <div key={side}>
+            {idx === 1 && <div className={styles.cardDivider} />}
+            <div
+              className={`${styles.teamRow} ${isWinner ? styles.teamWinner : ''} ${isLoser ? styles.teamLoser : ''} ${isPicked ? styles.teamPicked : ''}`}
+            >
+              {team ? (
+                <>
+                  <img
+                    className={isNextRound ? styles.teamLogoSm : styles.teamLogo}
+                    src={team.logoUrl}
+                    alt=""
+                    onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                  <span className={isNextRound ? styles.teamSeedSm : styles.teamSeed}>{team.seed}</span>
+                  <span className={isNextRound ? styles.teamNameSm : styles.teamName}>
+                    {isNextRound
+                      ? (team.abbreviation || team.shortName || team.name)
+                      : (team.shortName || team.name)}
+                  </span>
+                  {!isNextRound && !isScheduled && score !== null && (
+                    <span className={`${styles.teamScore} ${isWinner ? styles.scoreWinner : ''}`}>
+                      {score}
+                    </span>
+                  )}
+                  {!isNextRound && isWinner && <span className={styles.winCheck}>✓</span>}
+                </>
+              ) : (
+                <span className={isNextRound ? styles.teamNameSm : styles.teamName} style={{ color: '#bbb', fontStyle: 'italic' }}>TBD</span>
+              )}
+            </div>
           </div>
         );
       })}
+    </div>
+  );
+}
 
-      {/* Win probability bar for live/scheduled */}
-      {topProb !== null && bottomProb !== null && !isFinal && matchup.topTeam && matchup.bottomTeam && (
-        <div className={styles.probBar}>
-          <div
-            className={styles.probBarFill}
-            style={{
-              width: `${Math.max(topProb * 100, 5)}%`,
-              background: `#${matchup.topTeam.primaryColor || '666'}`,
-            }}
+// ─── Bracket Pair View ────────────────────────────────────
+
+function BracketPairView({
+  pair,
+  showMyPicks,
+  espnData,
+  showConnector,
+}: {
+  pair: BracketPairData;
+  showMyPicks: boolean;
+  espnData: EspnBracketData | null;
+  showConnector: boolean;
+}) {
+  const hasTwoGames = pair.games.length >= 2;
+
+  return (
+    <div className={styles.bracketPair}>
+      <div className={styles.pairSource}>
+        {pair.games.map(g => (
+          <CompactCard
+            key={g.id}
+            matchup={g}
+            espnPick={getPickForMatchup(espnData, g.id)}
+            showMyPicks={showMyPicks}
           />
-          <div
-            className={styles.probBarFill}
-            style={{
-              width: `${Math.max(bottomProb * 100, 5)}%`,
-              background: `#${matchup.bottomTeam.primaryColor || '999'}`,
-            }}
-          />
-        </div>
+        ))}
+      </div>
+      {showConnector && (
+        <>
+          <div className={`${styles.connector} ${!hasTwoGames ? styles.connectorFlat : ''}`} />
+          <div className={styles.pairDest}>
+            {pair.nextGame ? (
+              <CompactCard
+                matchup={pair.nextGame}
+                espnPick={getPickForMatchup(espnData, pair.nextGame.id)}
+                showMyPicks={showMyPicks}
+                isNextRound
+              />
+            ) : (
+              <div className={`${styles.card} ${styles.cardEmpty} ${styles.cardNext}`}>
+                <div className={styles.teamRow}><span className={styles.teamNameSm} style={{ color: '#bbb' }}>TBD</span></div>
+                <div className={styles.cardDivider} />
+                <div className={styles.teamRow}><span className={styles.teamNameSm} style={{ color: '#bbb' }}>TBD</span></div>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
@@ -193,7 +271,7 @@ export function MobileBracket({ state }: MobileBracketProps) {
   const espnBracket = useEspnBracketContext();
   const hasBracket = espnBracket.data !== null;
 
-  // Determine the current/active round (earliest round with non-final games)
+  // Current active round
   const currentRound = useMemo((): RoundName => {
     for (const round of TAB_ROUNDS) {
       const hasActiveGame = Array.from(matchups.values()).some(
@@ -201,7 +279,6 @@ export function MobileBracket({ state }: MobileBracketProps) {
       );
       if (hasActiveGame) return round;
     }
-    // All games final - show the last round that has games
     for (let i = TAB_ROUNDS.length - 1; i >= 0; i--) {
       const hasGames = Array.from(matchups.values()).some(m => m.round === TAB_ROUNDS[i]);
       if (hasGames) return TAB_ROUNDS[i];
@@ -210,70 +287,127 @@ export function MobileBracket({ state }: MobileBracketProps) {
   }, [matchups]);
 
   const [selectedRound, setSelectedRound] = useState<RoundName>(currentRound);
+  const isLastRound = selectedRound === 'Championship';
 
-  // Scroll active tab into view on mount
+  // Scroll active tab into view
   useEffect(() => {
     if (!tabScrollerRef.current) return;
     const idx = TAB_ROUNDS.indexOf(selectedRound);
     const btn = tabScrollerRef.current.children[idx] as HTMLElement | undefined;
-    if (btn) {
-      btn.scrollIntoView({ inline: 'center', block: 'nearest' });
-    }
+    if (btn) btn.scrollIntoView({ inline: 'center', block: 'nearest' });
   }, [selectedRound]);
 
-  // Get matchups for the selected round, grouped by region
-  const roundData = useMemo(() => {
-    const isFinalFourRound = selectedRound === 'Final Four';
-    const isChampionship = selectedRound === 'Championship';
-
-    if (isChampionship) {
+  // Build bracket pairs for the selected round
+  const { regionSections, ungroupedPairs } = useMemo(() => {
+    // Championship: single game, no pairing
+    if (selectedRound === 'Championship') {
       const m = matchups.get(championshipMatchupId);
-      return { regions: [], ungrouped: m ? [m] : [] };
+      return {
+        regionSections: [],
+        ungroupedPairs: m ? [{ games: [m], nextGame: null }] : [],
+      };
     }
 
-    if (isFinalFourRound) {
-      const games = finalFourMatchupIds
+    // Final Four: 2 games → Championship
+    if (selectedRound === 'Final Four') {
+      const ffGames = finalFourMatchupIds
         .map(id => matchups.get(id))
-        .filter((m): m is Matchup => m !== undefined && m.round === 'Final Four');
-      return { regions: [], ungrouped: sortByPosition(games) };
+        .filter((m): m is Matchup => !!m && m.round === 'Final Four');
+      const champGame = matchups.get(championshipMatchupId) || null;
+      return {
+        regionSections: [],
+        ungroupedPairs: [{ games: sortByPosition(ffGames), nextGame: champGame }],
+      };
     }
 
-    // Regular rounds - group by region
-    const regions: { name: RegionName; color: string; games: Matchup[] }[] = [];
+    // Elite 8: cross-region pairing by nextMatchupId
+    if (selectedRound === 'Elite 8') {
+      const allE8 = Array.from(matchups.values()).filter(m => m.round === 'Elite 8');
+      const pairMap = new Map<string, Matchup[]>();
+      for (const g of sortByPosition(allE8)) {
+        const key = g.nextMatchupId || g.id;
+        if (!pairMap.has(key)) pairMap.set(key, []);
+        pairMap.get(key)!.push(g);
+      }
+      const pairs: BracketPairData[] = [];
+      for (const [nextId, games] of pairMap) {
+        pairs.push({ games, nextGame: matchups.get(nextId) || null });
+      }
+      return { regionSections: [], ungroupedPairs: pairs };
+    }
+
+    // Region rounds (R64, R32, S16): group by region, then pair within region
+    const sections: { name: RegionName; color: string; pairs: BracketPairData[] }[] = [];
 
     for (const regionName of REGION_NAMES) {
       const ids = regionMatchupIds[regionName] || [];
       const games = ids
         .map(id => matchups.get(id))
-        .filter((m): m is Matchup => m !== undefined && m.round === selectedRound);
+        .filter((m): m is Matchup => !!m && m.round === selectedRound);
+      if (games.length === 0) continue;
 
-      if (games.length > 0) {
-        regions.push({
-          name: regionName,
-          color: REGION_COLORS[regionName],
-          games: sortByPosition(games),
-        });
+      const sorted = sortByPosition(games);
+      const pairMap = new Map<string, Matchup[]>();
+      for (const g of sorted) {
+        const key = g.nextMatchupId || g.id;
+        if (!pairMap.has(key)) pairMap.set(key, []);
+        pairMap.get(key)!.push(g);
       }
+
+      const pairs: BracketPairData[] = [];
+      for (const [nextId, pairGames] of pairMap) {
+        pairs.push({ games: pairGames, nextGame: matchups.get(nextId) || null });
+      }
+
+      sections.push({ name: regionName, color: REGION_COLORS[regionName], pairs });
     }
 
-    return { regions, ungrouped: [] };
+    return { regionSections: sections, ungroupedPairs: [] };
   }, [selectedRound, matchups, regionMatchupIds, finalFourMatchupIds, championshipMatchupId]);
 
-  const hasGames = roundData.regions.length > 0 || roundData.ungrouped.length > 0;
+  const hasGames = regionSections.length > 0 || ungroupedPairs.length > 0;
+  const score = espnBracket.data?.score;
 
   return (
     <div className={styles.container}>
+      {/* ESPN Score Bar */}
+      {hasBracket && score && (
+        <div className={styles.scoreBar}>
+          <div className={styles.scoreItem}>
+            <span className={styles.scoreVal}>{score.overallScore}</span>
+            <span className={styles.scoreLbl}>PTS</span>
+          </div>
+          <div className={styles.scoreSep} />
+          <div className={styles.scoreItem}>
+            <span className={styles.scoreVal}>{score.record.wins}-{score.record.losses}</span>
+            <span className={styles.scoreLbl}>W-L</span>
+          </div>
+          <div className={styles.scoreSep} />
+          <div className={styles.scoreItem}>
+            <span className={styles.scoreVal}>
+              {score.percentile != null ? ordinal(Math.round(score.percentile)) : `#${score.rank}`}
+            </span>
+            <span className={styles.scoreLbl}>PCTILE</span>
+          </div>
+          <div className={styles.scoreSep} />
+          <div className={styles.scoreItem}>
+            <span className={styles.scoreVal}>{score.possiblePointsRemaining}</span>
+            <span className={styles.scoreLbl}>LEFT</span>
+          </div>
+        </div>
+      )}
+
       {/* My Picks toggle */}
       {hasBracket && (
         <div className={styles.picksToggle}>
           <button
-            className={`${styles.picksToggleBtn} ${!showMyPicks ? styles.picksToggleBtnActive : ''}`}
+            className={`${styles.picksBtn} ${!showMyPicks ? styles.picksBtnActive : ''}`}
             onClick={() => setShowMyPicks(false)}
           >
             Live Bracket
           </button>
           <button
-            className={`${styles.picksToggleBtn} ${showMyPicks ? styles.picksToggleBtnActive : ''}`}
+            className={`${styles.picksBtn} ${showMyPicks ? styles.picksBtnActive : ''}`}
             onClick={() => setShowMyPicks(true)}
           >
             My Picks
@@ -282,55 +416,77 @@ export function MobileBracket({ state }: MobileBracketProps) {
       )}
 
       {/* Round tabs */}
-      <div className={styles.tabBar}>
-        <div className={styles.tabScroller} ref={tabScrollerRef}>
-          {TAB_ROUNDS.map(round => (
-            <button
-              key={round}
-              className={`${styles.tabBtn} ${round === selectedRound ? styles.tabBtnActive : ''}`}
-              onClick={() => setSelectedRound(round)}
-            >
-              {SHORT_LABELS[round]}
-            </button>
-          ))}
+      <div className={styles.roundBar}>
+        <div className={styles.roundScroller} ref={tabScrollerRef}>
+          {TAB_ROUNDS.map(round => {
+            const pts = ROUND_POINTS[round];
+            return (
+              <button
+                key={round}
+                className={`${styles.roundTab} ${round === selectedRound ? styles.roundTabActive : ''}`}
+                onClick={() => setSelectedRound(round)}
+              >
+                <span className={styles.roundLabel}>{TAB_LABELS[round]}</span>
+                <span className={styles.roundDate}>{ROUND_DATE_LABELS[round]}</span>
+                {pts > 0 && hasBracket && <span className={styles.roundPts}>{pts} pts</span>}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Games */}
+      {/* Bracket content */}
       {!hasGames ? (
         <div className={styles.emptyState}>No games in this round yet</div>
       ) : (
-        <>
-          {/* Region-grouped games */}
-          {roundData.regions.map(region => (
-            <div key={region.name}>
+        <div className={styles.bracketContent}>
+          {/* Region-grouped pairs */}
+          {regionSections.map(section => (
+            <div key={section.name} className={styles.regionSection}>
               <div className={styles.regionHeader}>
-                <span className={styles.regionName} style={{ color: region.color }}>
-                  {region.name}
-                </span>
-                <div className={styles.regionBar} style={{ background: region.color }} />
+                <div className={styles.regionDot} style={{ background: section.color }} />
+                <span className={styles.regionName} style={{ color: section.color }}>{section.name}</span>
+                <div className={styles.regionLine} style={{ background: section.color }} />
               </div>
-              {region.games.map(m => (
-                <GameCard
-                  key={m.id}
-                  matchup={m}
-                  espnPick={getPickForMatchup(espnBracket.data, m.id)}
+              {section.pairs.map((pair, i) => (
+                <BracketPairView
+                  key={i}
+                  pair={pair}
                   showMyPicks={showMyPicks}
+                  espnData={espnBracket.data}
+                  showConnector={!isLastRound}
                 />
               ))}
             </div>
           ))}
 
-          {/* Ungrouped games (Final Four / Championship) */}
-          {roundData.ungrouped.map(m => (
-            <GameCard
-              key={m.id}
-              matchup={m}
-              espnPick={getPickForMatchup(espnBracket.data, m.id)}
-              showMyPicks={showMyPicks}
-            />
-          ))}
-        </>
+          {/* Ungrouped pairs (E8 / Final Four / Championship) */}
+          {ungroupedPairs.length > 0 && (
+            <div className={styles.ungroupedSection}>
+              {selectedRound === 'Elite 8' && (
+                <div className={styles.regionHeader}>
+                  <span className={styles.regionName} style={{ color: '#666' }}>Semifinals</span>
+                  <div className={styles.regionLine} style={{ background: '#666' }} />
+                </div>
+              )}
+              {selectedRound === 'Final Four' && (
+                <div className={styles.regionHeader}>
+                  <span className={styles.regionName} style={{ color: '#666' }}>Final Four</span>
+                  <div className={styles.regionLine} style={{ background: '#666' }} />
+                </div>
+              )}
+              {ungroupedPairs.map((pair, i) => (
+                <BracketPairView
+                  key={i}
+                  pair={pair}
+                  showMyPicks={showMyPicks}
+                  espnData={espnBracket.data}
+                  showConnector={!isLastRound}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
