@@ -1,4 +1,5 @@
 import type { Team } from '../../types/bracket';
+import type { EspnBracketPick } from '../../types/espn-bracket';
 import styles from './TeamRow.module.css';
 
 interface TeamRowProps {
@@ -11,9 +12,11 @@ interface TeamRowProps {
   isOnPath?: boolean;
   pathColor?: string;
   isUserPick?: boolean;
+  espnPick?: EspnBracketPick | null;
+  showMyPicks?: boolean;
 }
 
-export function TeamRow({ team, score, isWinner, isLive, probability, position, isOnPath = false, pathColor, isUserPick = false }: TeamRowProps) {
+export function TeamRow({ team, score, isWinner, isLive, probability, position, isOnPath = false, pathColor, isUserPick = false, espnPick, showMyPicks = false }: TeamRowProps) {
   if (!team) {
     return (
       <div className={`${styles.row} ${styles.tbd} ${styles[position]}`}>
@@ -24,6 +27,7 @@ export function TeamRow({ team, score, isWinner, isLive, probability, position, 
   }
 
   const isEliminated = isWinner === false;
+  const isPickedTeam = showMyPicks && espnPick && espnPick.side === position;
 
   return (
     <div
@@ -33,6 +37,13 @@ export function TeamRow({ team, score, isWinner, isLive, probability, position, 
         color: '#fff',
       } : undefined}
     >
+      {isPickedTeam && (
+        <span className={`${styles.pickDot} ${
+          espnPick!.result === 'CORRECT' ? styles.pickCorrect :
+          espnPick!.result === 'INCORRECT' ? styles.pickIncorrect :
+          styles.pickPending
+        }`} />
+      )}
       <span
         className={styles.seed}
         data-seed={team.seed}

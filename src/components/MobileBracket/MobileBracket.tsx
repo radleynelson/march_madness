@@ -1,8 +1,10 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import type { BracketState, Matchup, RoundName, RegionName } from '../../types/bracket';
+import type { EspnBracketPick } from '../../types/espn-bracket';
 import { ROUND_LABELS } from '../../types/bracket';
 import { REGION_NAMES, REGION_COLORS } from '../../data/constants';
 import { usePreviewContext } from '../../hooks/usePreview';
+import { useEspnBracketContext, getPickForMatchup } from '../../hooks/useEspnBracket';
 import styles from './MobileBracket.module.css';
 
 interface MobileBracketProps {
@@ -30,7 +32,7 @@ function sortByPosition(matchups: Matchup[]): Matchup[] {
 
 // ─── Game Card ────────────────────────────────────────────
 
-function GameCard({ matchup }: { matchup: Matchup }) {
+function GameCard({ matchup, espnPick, showMyPicks }: { matchup: Matchup; espnPick: EspnBracketPick | null; showMyPicks: boolean }) {
   const { openPreview } = usePreviewContext();
 
   const isLive = matchup.status === 'in_progress';
@@ -114,6 +116,7 @@ function GameCard({ matchup }: { matchup: Matchup }) {
       ].map(({ team, score, side, prob }) => {
         const isWinner = isFinal && matchup.winner === side;
         const isLoser = isFinal && matchup.winner !== null && matchup.winner !== side;
+        const isPickedTeam = showMyPicks && espnPick && espnPick.side === side;
 
         if (!team) {
           return (
@@ -128,6 +131,13 @@ function GameCard({ matchup }: { matchup: Matchup }) {
             key={side}
             className={`${styles.teamRow} ${isWinner ? styles.teamWinner : ''} ${isLoser ? styles.teamLoser : ''}`}
           >
+            {isPickedTeam && (
+              <span className={`${styles.pickDot} ${
+                espnPick!.result === 'CORRECT' ? styles.pickCorrect :
+                espnPick!.result === 'INCORRECT' ? styles.pickIncorrect :
+                styles.pickPending
+              }`} />
+            )}
             <img
               className={styles.teamLogo}
               src={team.logoUrl}
@@ -179,6 +189,9 @@ function GameCard({ matchup }: { matchup: Matchup }) {
 export function MobileBracket({ state }: MobileBracketProps) {
   const { matchups, regionMatchupIds, finalFourMatchupIds, championshipMatchupId } = state;
   const tabScrollerRef = useRef<HTMLDivElement>(null);
+  const [showMyPicks, setShowMyPicks] = useState(false);
+  const espnBracket = useEspnBracketContext();
+  const hasBracket = espnBracket.data !== null;
 
   // Determine the current/active round (earliest round with non-final games)
   const currentRound = useMemo((): RoundName => {
@@ -250,6 +263,24 @@ export function MobileBracket({ state }: MobileBracketProps) {
 
   return (
     <div className={styles.container}>
+      {/* My Picks toggle */}
+      {hasBracket && (
+        <div className={styles.picksToggle}>
+          <button
+            className={`${styles.picksToggleBtn} ${!showMyPicks ? styles.picksToggleBtnActive : ''}`}
+            onClick={() => setShowMyPicks(false)}
+          >
+            Live Bracket
+          </button>
+          <button
+            className={`${styles.picksToggleBtn} ${showMyPicks ? styles.picksToggleBtnActive : ''}`}
+            onClick={() => setShowMyPicks(true)}
+          >
+            My Picks
+          </button>
+        </div>
+      )}
+
       {/* Round tabs */}
       <div className={styles.tabBar}>
         <div className={styles.tabScroller} ref={tabScrollerRef}>
@@ -280,14 +311,24 @@ export function MobileBracket({ state }: MobileBracketProps) {
                 <div className={styles.regionBar} style={{ background: region.color }} />
               </div>
               {region.games.map(m => (
-                <GameCard key={m.id} matchup={m} />
+                <GameCard
+                  key={m.id}
+                  matchup={m}
+                  espnPick={getPickForMatchup(espnBracket.data, m.id)}
+                  showMyPicks={showMyPicks}
+                />
               ))}
             </div>
           ))}
 
           {/* Ungrouped games (Final Four / Championship) */}
           {roundData.ungrouped.map(m => (
-            <GameCard key={m.id} matchup={m} />
+            <GameCard
+              key={m.id}
+              matchup={m}
+              espnPick={getPickForMatchup(espnBracket.data, m.id)}
+              showMyPicks={showMyPicks}
+            />
           ))}
         </>
       )}

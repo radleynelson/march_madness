@@ -1,13 +1,18 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, createContext, useContext } from 'react';
 import type { Matchup as MatchupType } from '../../types/bracket';
 import { useHoverContext } from '../../hooks/useHoverState';
 import { usePreviewContext } from '../../hooks/usePreview';
 import { useBracketContext } from '../../hooks/useBracketState';
+import { useEspnBracketContext, getPickForMatchup } from '../../hooks/useEspnBracket';
 import { winProbability } from '../../model/predictions';
 import { TeamRow } from './TeamRow';
 import { ProbabilityBar } from './ProbabilityBar';
 import { LiveIndicator } from './LiveIndicator';
 import styles from './Matchup.module.css';
+
+/** Context to toggle "My Picks" mode on bracket views */
+export const ShowMyPicksContext = createContext(false);
+export function useShowMyPicks() { return useContext(ShowMyPicksContext); }
 
 interface MatchupProps {
   matchup: MatchupType;
@@ -32,6 +37,9 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
   const { openPreview } = usePreviewContext();
   const { state, dispatch } = useBracketContext();
   const isUserPick = state.userPicks.has(matchup.id);
+  const showMyPicks = useShowMyPicks();
+  const espnBracket = useEspnBracketContext();
+  const espnPick = showMyPicks ? getPickForMatchup(espnBracket.data, matchup.id) : null;
 
   const handleTeamHover = useCallback((teamId: string | undefined) => {
     if (teamId) {
@@ -126,6 +134,8 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
           isOnPath={isOnPath && pathSlot === 'top'}
           pathColor={isOnPath && pathSlot === 'top' ? pathColor : undefined}
           isUserPick={isUserPick && winner === 'top'}
+          espnPick={espnPick ?? undefined}
+          showMyPicks={showMyPicks}
         />
       </div>
 
@@ -156,6 +166,8 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
           isOnPath={isOnPath && pathSlot === 'bottom'}
           pathColor={isOnPath && pathSlot === 'bottom' ? pathColor : undefined}
           isUserPick={isUserPick && winner === 'bottom'}
+          espnPick={espnPick ?? undefined}
+          showMyPicks={showMyPicks}
         />
       </div>
 

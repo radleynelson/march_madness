@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Matchup } from '../../types/bracket';
 import { useKalshiContext } from '../../hooks/useKalshiMarkets';
+import { useEspnBracketContext, getPickForMatchup } from '../../hooks/useEspnBracket';
 import { formatVolume, priceToAmericanOdds } from '../../api/kalshi';
 import { useLiveGame } from '../../hooks/useLiveGame';
 import type {
@@ -1033,6 +1034,39 @@ function KalshiLiveMarket({ matchup }: { matchup: Matchup }) {
   );
 }
 
+// ─── ESPN Bracket Pick ────────────────────────────────────
+
+function EspnBracketPickRow({ matchup }: { matchup: Matchup }) {
+  const espnBracket = useEspnBracketContext();
+  const pick = getPickForMatchup(espnBracket.data, matchup.id);
+  if (!pick) return null;
+
+  const resultClass =
+    pick.result === 'CORRECT' ? styles.espnPickCorrect :
+    pick.result === 'INCORRECT' ? styles.espnPickIncorrect :
+    styles.espnPickPending;
+
+  const statusLabel =
+    pick.result === 'CORRECT' ? 'CORRECT' :
+    pick.result === 'INCORRECT' ? 'INCORRECT' :
+    'PENDING';
+
+  return (
+    <div className={styles.oddsSection}>
+      <div className={styles.sectionTitle}>
+        Your Bracket Pick
+        <span className={`${styles.espnPickBadge} ${resultClass}`}>{statusLabel}</span>
+      </div>
+      <div className={styles.espnPickRow}>
+        <span className={styles.espnPickTeam}>{pick.teamName}</span>
+        <span className={`${styles.espnPickPoints} ${resultClass}`}>
+          {pick.result === 'CORRECT' ? '+' : ''}{pick.pointValue} pts
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Modal ───────────────────────────────────────────
 
 export function LiveGameModal({ matchup, onClose, fullPage = false }: LiveGameModalProps) {
@@ -1137,6 +1171,7 @@ export function LiveGameModal({ matchup, onClose, fullPage = false }: LiveGameMo
                 />
                 <LiveOdds summary={summary} />
                 <KalshiLiveMarket matchup={matchup} />
+                <EspnBracketPickRow matchup={matchup} />
                 <TeamStats
                   summary={summary}
                   homeTeamId={homeTeamId}

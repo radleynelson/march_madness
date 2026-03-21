@@ -6,6 +6,41 @@
   padding: 0 12px 40px;
 }
 
+/* My Picks toggle */
+.picksToggle {
+  display: flex;
+  gap: 0;
+  margin: 12px 0;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.picksToggleBtn {
+  padding: 7px 16px;
+  border: none;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary, #666);
+  transition: all 0.15s;
+}
+
+.picksToggleBtn:hover {
+  background: #f5f5f5;
+}
+
+.picksToggleBtnActive {
+  background: #1a1a2e;
+  color: #fff;
+}
+
+.picksToggleBtnActive:hover {
+  background: #2a2a40;
+}
+
 /* ─── Round Tabs ──────────────────────────────────── */
 
 .tabBar {
@@ -245,6 +280,26 @@
   font-weight: 800;
   min-width: 18px;
   text-align: center;
+}
+
+/* ESPN bracket pick indicator dot */
+.pickDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pickCorrect {
+  background: #16a34a;
+}
+
+.pickIncorrect {
+  background: #dc2626;
+}
+
+.pickPending {
+  background: #f59e0b;
 }
 
 /* Probability bar */

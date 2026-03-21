@@ -7,6 +7,7 @@ import type { MatchupLine } from '../../data/team-odds';
 import { winProbability } from '../../model/predictions';
 import { fetchGameSummary } from '../../api/espn';
 import { useKalshiContext } from '../../hooks/useKalshiMarkets';
+import { useEspnBracketContext, getPickForMatchup } from '../../hooks/useEspnBracket';
 import type { KalshiFuturesMarket } from '../../types/kalshi';
 import { formatVolume, priceToAmericanOdds } from '../../api/kalshi';
 import { AIChat } from './AIChat';
@@ -149,6 +150,8 @@ export function MatchupPreview({ matchup, onClose, fullPage = false }: MatchupPr
   const kalshi = useKalshiContext();
   const kalshiData = kalshi.matchupMarkets.get(matchup.id) ?? null;
   const kalshiPosition = kalshi.positions.get(matchup.id) ?? null;
+  const espnBracket = useEspnBracketContext();
+  const espnPick = getPickForMatchup(espnBracket.data, matchup.id);
 
   // Close on Escape
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -359,6 +362,34 @@ export function MatchupPreview({ matchup, onClose, fullPage = false }: MatchupPr
                   </span>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ESPN Bracket Pick */}
+          {espnPick && (
+            <div className={`${styles.espnPickSection} ${
+              espnPick.result === 'CORRECT' ? styles.espnPickCorrect :
+              espnPick.result === 'INCORRECT' ? styles.espnPickIncorrect :
+              styles.espnPickPending
+            }`}>
+              <div className={styles.espnPickHeader}>
+                <span className={styles.espnPickTitle}>Your Bracket Pick</span>
+                <span className={`${styles.espnPickStatus} ${
+                  espnPick.result === 'CORRECT' ? styles.espnPickStatusCorrect :
+                  espnPick.result === 'INCORRECT' ? styles.espnPickStatusIncorrect :
+                  styles.espnPickStatusPending
+                }`}>
+                  {espnPick.result === 'CORRECT' ? 'CORRECT' :
+                   espnPick.result === 'INCORRECT' ? 'INCORRECT' :
+                   'PENDING'}
+                </span>
+              </div>
+              <div className={styles.espnPickDetails}>
+                <span className={styles.espnPickTeam}>{espnPick.teamName}</span>
+                <span className={styles.espnPickPoints}>
+                  {espnPick.result === 'CORRECT' ? '+' : ''}{espnPick.pointValue} pts
+                </span>
+              </div>
             </div>
           )}
         </div>

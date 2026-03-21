@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { BracketState, RegionName, Matchup as MatchupType } from '../../types/bracket';
 import { Region } from './Region';
 import { FinalFour } from './FinalFour';
-import { Matchup } from '../Matchup/Matchup';
+import { Matchup, ShowMyPicksContext } from '../Matchup/Matchup';
+import { useEspnBracketContext } from '../../hooks/useEspnBracket';
 import { REGION_COLORS } from '../../data/constants';
 import styles from './Bracket.module.css';
 
@@ -31,8 +32,11 @@ export function Bracket({ state }: BracketProps) {
   const [activeTab, setActiveTab] = useState<BracketTab>('East');
   const [isMedium, setIsMedium] = useState(false);
   const [scale, setScale] = useState(1);
+  const [showMyPicks, setShowMyPicks] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const bracketRef = useRef<HTMLDivElement>(null);
+  const espnBracket = useEspnBracketContext();
+  const hasBracket = espnBracket.data !== null;
 
   // Use tabbed layout when screen is too narrow for the full grid
   useEffect(() => {
@@ -107,44 +111,63 @@ export function Bracket({ state }: BracketProps) {
   // ── TABBED LAYOUT (medium screens 1024–1400px) ──
   if (isMedium) {
     return (
-      <div className={styles.wrapper}>
-        {firstFourSection}
-
-        {/* Tab bar */}
-        <div className={styles.tabBar}>
-          {TABS.map(tab => (
-            <button
-              key={tab.key}
-              className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ''}`}
-              style={activeTab === tab.key ? {
-                borderBottomColor: TAB_COLORS[tab.key],
-                color: TAB_COLORS[tab.key],
-              } : undefined}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab content */}
-        <div className={styles.tabContent}>
-          {activeTab === 'Final Four' ? (
-            <div className={styles.tabFinalFour}>
-              <FinalFour
-                semifinal1={semifinal1}
-                semifinal2={semifinal2}
-                championship={championship}
-              />
+      <ShowMyPicksContext.Provider value={showMyPicks}>
+        <div className={styles.wrapper}>
+          {hasBracket && (
+            <div className={styles.picksToggle}>
+              <button
+                className={`${styles.picksToggleBtn} ${!showMyPicks ? styles.picksToggleBtnActive : ''}`}
+                onClick={() => setShowMyPicks(false)}
+              >
+                Live Bracket
+              </button>
+              <button
+                className={`${styles.picksToggleBtn} ${showMyPicks ? styles.picksToggleBtnActive : ''}`}
+                onClick={() => setShowMyPicks(true)}
+              >
+                My Picks
+              </button>
             </div>
-          ) : (
-            <Region
-              name={activeTab}
-              matchups={getRegionMatchups(activeTab)}
-            />
           )}
+
+          {firstFourSection}
+
+          {/* Tab bar */}
+          <div className={styles.tabBar}>
+            {TABS.map(tab => (
+              <button
+                key={tab.key}
+                className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ''}`}
+                style={activeTab === tab.key ? {
+                  borderBottomColor: TAB_COLORS[tab.key],
+                  color: TAB_COLORS[tab.key],
+                } : undefined}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          <div className={styles.tabContent}>
+            {activeTab === 'Final Four' ? (
+              <div className={styles.tabFinalFour}>
+                <FinalFour
+                  semifinal1={semifinal1}
+                  semifinal2={semifinal2}
+                  championship={championship}
+                />
+              </div>
+            ) : (
+              <Region
+                name={activeTab}
+                matchups={getRegionMatchups(activeTab)}
+              />
+            )}
+          </div>
         </div>
-      </div>
+      </ShowMyPicksContext.Provider>
     );
   }
 
@@ -152,47 +175,66 @@ export function Bracket({ state }: BracketProps) {
   const bracketHeight = bracketRef.current?.scrollHeight ?? 0;
 
   return (
-    <div className={styles.wrapper} ref={wrapperRef} style={{ overflow: 'hidden' }}>
-      {firstFourSection}
+    <ShowMyPicksContext.Provider value={showMyPicks}>
+      <div className={styles.wrapper} ref={wrapperRef} style={{ overflow: 'hidden' }}>
+        {hasBracket && (
+          <div className={styles.picksToggle}>
+            <button
+              className={`${styles.picksToggleBtn} ${!showMyPicks ? styles.picksToggleBtnActive : ''}`}
+              onClick={() => setShowMyPicks(false)}
+            >
+              Live Bracket
+            </button>
+            <button
+              className={`${styles.picksToggleBtn} ${showMyPicks ? styles.picksToggleBtnActive : ''}`}
+              onClick={() => setShowMyPicks(true)}
+            >
+              My Picks
+            </button>
+          </div>
+        )}
 
-      <div
-        style={{
-          height: scale < 1 ? `${bracketHeight * scale}px` : undefined,
-        }}
-      >
+        {firstFourSection}
+
         <div
-          className={styles.bracket}
-          ref={bracketRef}
-          style={scale < 1 ? {
-            transform: `scale(${scale})`,
-            transformOrigin: 'top left',
-          } : undefined}
+          style={{
+            height: scale < 1 ? `${bracketHeight * scale}px` : undefined,
+          }}
         >
-          <div className={styles.regionTopLeft}>
-            <Region name="East" matchups={getRegionMatchups('East')} />
-          </div>
+          <div
+            className={styles.bracket}
+            ref={bracketRef}
+            style={scale < 1 ? {
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+            } : undefined}
+          >
+            <div className={styles.regionTopLeft}>
+              <Region name="East" matchups={getRegionMatchups('East')} />
+            </div>
 
-          <div className={styles.center}>
-            <FinalFour
-              semifinal1={semifinal1}
-              semifinal2={semifinal2}
-              championship={championship}
-            />
-          </div>
+            <div className={styles.center}>
+              <FinalFour
+                semifinal1={semifinal1}
+                semifinal2={semifinal2}
+                championship={championship}
+              />
+            </div>
 
-          <div className={styles.regionTopRight}>
-            <Region name="West" matchups={getRegionMatchups('West')} reversed />
-          </div>
+            <div className={styles.regionTopRight}>
+              <Region name="West" matchups={getRegionMatchups('West')} reversed />
+            </div>
 
-          <div className={styles.regionBottomLeft}>
-            <Region name="South" matchups={getRegionMatchups('South')} />
-          </div>
+            <div className={styles.regionBottomLeft}>
+              <Region name="South" matchups={getRegionMatchups('South')} />
+            </div>
 
-          <div className={styles.regionBottomRight}>
-            <Region name="Midwest" matchups={getRegionMatchups('Midwest')} reversed />
+            <div className={styles.regionBottomRight}>
+              <Region name="Midwest" matchups={getRegionMatchups('Midwest')} reversed />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ShowMyPicksContext.Provider>
   );
 }

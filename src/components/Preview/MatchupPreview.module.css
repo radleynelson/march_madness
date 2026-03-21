@@ -231,6 +231,99 @@
   color: #5b21b6;
 }
 
+/* ESPN Bracket Pick section */
+.espnPickSection {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid;
+}
+
+.espnPickPending {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.espnPickCorrect {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.espnPickIncorrect {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.espnPickHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.espnPickTitle {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #555;
+}
+
+.espnPickStatus {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.espnPickStatusPending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.espnPickStatusCorrect {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.espnPickStatusIncorrect {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.espnPickDetails {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.espnPickTeam {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.espnPickPoints {
+  font-size: 12px;
+  font-weight: 800;
+  color: #555;
+}
+
+.espnPickCorrect .espnPickPoints {
+  color: #15803d;
+}
+
+.espnPickIncorrect .espnPickTeam {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.espnPickIncorrect .espnPickPoints {
+  text-decoration: line-through;
+  color: #999;
+}
+
 /* Teams section - two columns */
 .teamsGrid {
   display: grid;

@@ -597,6 +597,66 @@
   color: #5b21b6;
 }
 
+/* ─── ESPN Bracket Pick ──────────────────────────── */
+
+.espnPickBadge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+.espnPickPending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.espnPickCorrect {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.espnPickIncorrect {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.espnPickRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px 6px;
+}
+
+.espnPickTeam {
+  font-size: 14px;
+  font-weight: 800;
+  color: #333;
+}
+
+.espnPickPoints {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.espnPickPoints.espnPickCorrect {
+  background: none;
+  color: #15803d;
+}
+
+.espnPickPoints.espnPickIncorrect {
+  background: none;
+  color: #dc2626;
+  text-decoration: line-through;
+}
+
+.espnPickPoints.espnPickPending {
+  background: none;
+  color: #d97706;
+}
+
 /* ─── Recent Plays ────────────────────────────────── */
 
 .recentPlaysSection {
