@@ -113,12 +113,34 @@ export function Matchup({ matchup, compact = false }: MatchupProps) {
   const pathSlot = teamPath?.matchupSlots.get(matchup.id);
   const pathColor = teamPath?.team.primaryColor ?? '#333';
 
+  const pickResultClass = espnPick
+    ? espnPick.result === 'CORRECT' ? styles.pickCorrect
+    : espnPick.result === 'INCORRECT' ? styles.pickIncorrect
+    : styles.pickPending
+    : '';
+
   return (
     <div
-      className={`${styles.matchup} ${isLive ? styles.live : ''} ${isFinal ? styles.final : ''} ${compact ? styles.compact : ''} ${isOnPath ? styles.onPath : ''} ${pathActive && !isOnPath ? styles.dimmed : ''} ${isUserPick ? styles.userPick : ''}`}
+      className={`${styles.matchup} ${isLive ? styles.live : ''} ${isFinal ? styles.final : ''} ${compact ? styles.compact : ''} ${isOnPath ? styles.onPath : ''} ${pathActive && !isOnPath ? styles.dimmed : ''} ${isUserPick ? styles.userPick : ''} ${espnPick ? styles.hasPick : ''} ${espnPick ? pickResultClass : ''}`}
       style={isOnPath ? { borderColor: pathColor, borderWidth: '2px' } as React.CSSProperties : undefined}
       onMouseLeave={handleMouseLeave}
     >
+      {/* ESPN pick header banner */}
+      {espnPick && (
+        <div className={`${styles.pickBanner} ${pickResultClass}`}>
+          <span className={styles.pickBannerLabel}>Pick:</span>
+          <span className={styles.pickBannerTeam}>{espnPick.teamAbbrev}</span>
+          {espnPick.result === 'CORRECT' && <span className={styles.pickBannerIcon}>✓</span>}
+          {espnPick.result === 'INCORRECT' && <span className={styles.pickBannerIcon}>✗</span>}
+          {espnPick.result === 'CORRECT' && (
+            <span className={styles.pickBannerPts}>+{espnPick.pointValue}</span>
+          )}
+          {espnPick.result === 'UNDECIDED' && (
+            <span className={styles.pickBannerPts}>{espnPick.pointValue} pts</span>
+          )}
+        </div>
+      )}
+
       <div
         onMouseEnter={() => handleTeamHover(topTeam?.id)}
         onClick={() => handleTeamClick('top')}
