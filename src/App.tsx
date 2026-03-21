@@ -6,6 +6,7 @@ import { useHoverState, HoverContext } from './hooks/useHoverState';
 import { usePreviewState, PreviewContext } from './hooks/usePreview';
 import { useSettings, SettingsContext } from './hooks/useSettings';
 import { useKalshiMarkets, KalshiContext } from './hooks/useKalshiMarkets';
+import { useEspnBracket, EspnBracketContext } from './hooks/useEspnBracket';
 import { Header } from './components/Header/Header';
 import { Bracket } from './components/Bracket/Bracket';
 import { MobileBracket } from './components/MobileBracket/MobileBracket';
@@ -92,6 +93,9 @@ function AppContent() {
   // Kalshi prediction markets
   const kalshiState = useKalshiMarkets(state, settingsState.settings.kalshiKeyId, settingsState.settings.kalshiPrivateKey);
 
+  // ESPN bracket import
+  const espnBracketState = useEspnBracket(state);
+
   // Preview modal state
   const previewState = usePreviewState();
   const previewMatchup = previewState.previewMatchupId
@@ -123,15 +127,17 @@ function AppContent() {
       <SettingsContext.Provider value={settingsState}>
         <BracketContext.Provider value={{ state, dispatch }}>
           <KalshiContext.Provider value={kalshiState}>
-            <HoverContext.Provider value={hoverState}>
-              <PreviewContext.Provider value={previewState}>
-                <MatchupPreview
-                  matchup={fullPagePreviewMatchup}
-                  onClose={closeFullPage}
-                  fullPage
-                />
-              </PreviewContext.Provider>
-            </HoverContext.Provider>
+            <EspnBracketContext.Provider value={espnBracketState}>
+              <HoverContext.Provider value={hoverState}>
+                <PreviewContext.Provider value={previewState}>
+                  <MatchupPreview
+                    matchup={fullPagePreviewMatchup}
+                    onClose={closeFullPage}
+                    fullPage
+                  />
+                </PreviewContext.Provider>
+              </HoverContext.Provider>
+            </EspnBracketContext.Provider>
           </KalshiContext.Provider>
         </BracketContext.Provider>
       </SettingsContext.Provider>
@@ -144,15 +150,17 @@ function AppContent() {
       <SettingsContext.Provider value={settingsState}>
         <BracketContext.Provider value={{ state, dispatch }}>
           <KalshiContext.Provider value={kalshiState}>
-            <HoverContext.Provider value={hoverState}>
-              <PreviewContext.Provider value={previewState}>
-                <LiveGameModal
-                  matchup={fullPageGameMatchup}
-                  onClose={closeFullPage}
-                  fullPage
-                />
-              </PreviewContext.Provider>
-            </HoverContext.Provider>
+            <EspnBracketContext.Provider value={espnBracketState}>
+              <HoverContext.Provider value={hoverState}>
+                <PreviewContext.Provider value={previewState}>
+                  <LiveGameModal
+                    matchup={fullPageGameMatchup}
+                    onClose={closeFullPage}
+                    fullPage
+                  />
+                </PreviewContext.Provider>
+              </HoverContext.Provider>
+            </EspnBracketContext.Provider>
           </KalshiContext.Provider>
         </BracketContext.Provider>
       </SettingsContext.Provider>
@@ -163,9 +171,10 @@ function AppContent() {
     <SettingsContext.Provider value={settingsState}>
       <BracketContext.Provider value={{ state, dispatch }}>
         <KalshiContext.Provider value={kalshiState}>
-          <HoverContext.Provider value={hoverState}>
-            <PreviewContext.Provider value={previewState}>
-              <div>
+          <EspnBracketContext.Provider value={espnBracketState}>
+            <HoverContext.Provider value={hoverState}>
+              <PreviewContext.Provider value={previewState}>
+                <div>
               <Header
                 state={state}
                 hasUserPicks={state.userPicks.size > 0}
@@ -216,9 +225,10 @@ function AppContent() {
               {showBracketFill && (
                 <BracketFill onClose={() => setShowBracketFill(false)} />
               )}
-            </div>
-            </PreviewContext.Provider>
-          </HoverContext.Provider>
+              </div>
+              </PreviewContext.Provider>
+            </HoverContext.Provider>
+          </EspnBracketContext.Provider>
         </KalshiContext.Provider>
       </BracketContext.Provider>
     </SettingsContext.Provider>

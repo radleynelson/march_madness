@@ -22,6 +22,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/kalshi/, ''),
       },
+      '/api/espn-bracket': {
+        target: 'https://gambit-api.fantasy.espn.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/espn-bracket/, '/apis/v1/challenges/277'),
+      },
     },
   },
 })

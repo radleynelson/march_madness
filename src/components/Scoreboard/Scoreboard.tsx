@@ -6,6 +6,8 @@ import { TOURNAMENT_DATES, ALL_TOURNAMENT_DATES } from '../../data/constants';
 import { usePreviewContext } from '../../hooks/usePreview';
 import { useKalshiContext } from '../../hooks/useKalshiMarkets';
 import type { MatchupPosition } from '../../hooks/useKalshiMarkets';
+import { useEspnBracketContext, getPickForMatchup } from '../../hooks/useEspnBracket';
+import type { EspnBracketPick } from '../../types/espn-bracket';
 import { formatVolume } from '../../api/kalshi';
 import styles from './Scoreboard.module.css';
 
@@ -107,12 +109,14 @@ function GameCard({
   onOpen,
   kalshiPrices,
   position,
+  espnPick,
 }: {
   event: EspnEvent;
   matchup: Matchup | null;
   onOpen: (matchupId: string) => void;
   kalshiPrices: { top: number; bottom: number; topName: string; bottomName: string; volume: number } | null;
   position: MatchupPosition | null;
+  espnPick: EspnBracketPick | null;
 }) {
   const comp = event.competitions[0];
   if (!comp) return null;
@@ -227,11 +231,25 @@ function GameCard({
         const seed = rawSeed && rawSeed <= 16 ? rawSeed : null;
         const teamName = team.team.shortDisplayName || team.team.location || 'TBD';
 
+        // Check if this team is the user's ESPN bracket pick
+        const isPickedTeam = espnPick && matchup && (() => {
+          const compIsTop = team.team.id === matchup.topTeam?.id;
+          const compIsBottom = team.team.id === matchup.bottomTeam?.id;
+          return (espnPick.side === 'top' && compIsTop) || (espnPick.side === 'bottom' && compIsBottom);
+        })();
+
         return (
           <div
             key={team.id}
             className={`${styles.teamRow} ${isWinner ? styles.teamWinner : ''} ${isLoser ? styles.teamLoser : ''}`}
           >
+            {isPickedTeam && (
+              <span className={`${styles.pickDot} ${
+                espnPick!.result === 'CORRECT' ? styles.pickDotCorrect :
+                espnPick!.result === 'INCORRECT' ? styles.pickDotIncorrect :
+                styles.pickDotPending
+              }`} />
+            )}
             {teamName !== 'TBD' && (
               <img
                 className={styles.teamLogo}
@@ -314,6 +332,27 @@ function GameCard({
           <span className={styles.positionPrice}>@ {Math.round(position.currentPrice * 100)}¢</span>
         </div>
       )}
+
+      {/* ESPN bracket pick */}
+      {espnPick && (
+        <div className={`${styles.espnPickRow} ${
+          espnPick.result === 'CORRECT' ? styles.espnPickCorrect :
+          espnPick.result === 'INCORRECT' ? styles.espnPickIncorrect :
+          styles.espnPickPending
+        }`}>
+          <span className={styles.espnPickLabel}>
+            {espnPick.result === 'CORRECT' ? 'YOUR PICK \u2713' :
+             espnPick.result === 'INCORRECT' ? 'YOUR PICK \u2717' :
+             'YOUR PICK'}
+          </span>
+          <span className={espnPick.result === 'INCORRECT' ? styles.espnPickTeamStrike : styles.espnPickTeam}>
+            {espnPick.teamName}
+          </span>
+          <span className={styles.espnPickPoints}>
+            {espnPick.result === 'CORRECT' ? '+' : ''}{espnPick.pointValue}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -326,6 +365,7 @@ export function Scoreboard({ state }: ScoreboardProps) {
   const [loading, setLoading] = useState(true);
   const { openPreview } = usePreviewContext();
   const kalshi = useKalshiContext();
+  const espnBracket = useEspnBracketContext();
 
   // Fetch ESPN scoreboard for selected date
   useEffect(() => {
@@ -422,6 +462,23 @@ export function Scoreboard({ state }: ScoreboardProps) {
         </div>
       </div>
 
+      {/* ESPN bracket scoring summary */}
+      {espnBracket.data && (
+        <div className={styles.espnSummaryBar}>
+          <span className={styles.espnSummaryName}>{espnBracket.data.entryName}</span>
+          <span className={styles.espnSummaryScore}>{espnBracket.data.score.overallScore} pts</span>
+          <span className={styles.espnSummaryDetail}>
+            {espnBracket.data.score.record.wins}-{espnBracket.data.score.record.losses}
+          </span>
+          <span className={styles.espnSummaryDetail}>
+            #{espnBracket.data.score.rank.toLocaleString()}
+          </span>
+          <span className={styles.espnSummaryDetail}>
+            Top {Math.round((1 - espnBracket.data.score.percentile) * 100)}%
+          </span>
+        </div>
+      )}
+
       {/* Games grid */}
       {loading ? (
         <div className={styles.loadingState}>Loading games...</div>
@@ -447,6 +504,7 @@ export function Scoreboard({ state }: ScoreboardProps) {
               };
             }
             const pos = m ? kalshi.positions.get(m.id) ?? null : null;
+            const pick = m ? getPickForMatchup(espnBracket.data, m.id) : null;
             return (
               <GameCard
                 key={event.id}
@@ -455,6 +513,7 @@ export function Scoreboard({ state }: ScoreboardProps) {
                 onOpen={openPreview}
                 kalshiPrices={kalshiPrices}
                 position={pos}
+                espnPick={pick}
               />
             );
           })}

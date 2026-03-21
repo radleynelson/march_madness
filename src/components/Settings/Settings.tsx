@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSettingsContext } from '../../hooks/useSettings';
+import { useEspnBracketContext } from '../../hooks/useEspnBracket';
 import styles from './Settings.module.css';
 
 interface SettingsProps {
@@ -8,9 +9,11 @@ interface SettingsProps {
 
 export function Settings({ onClose }: SettingsProps) {
   const { settings, setApiKey, clearApiKey, setKalshiCredentials, clearKalshiCredentials } = useSettingsContext();
+  const espnBracket = useEspnBracketContext();
   const [inputKey, setInputKey] = useState(settings.apiKey);
   const [kalshiKeyId, setKalshiKeyId] = useState(settings.kalshiKeyId);
   const [kalshiPk, setKalshiPk] = useState(settings.kalshiPrivateKey);
+  const [espnInput, setEspnInput] = useState('');
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -131,6 +134,56 @@ export function Settings({ onClose }: SettingsProps) {
             </div>
             <div className={styles.hint}>
               Add your Kalshi API key to see your positions on games. Your key is stored locally on this device and is only used to sign requests. The private key never leaves your browser.
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <div className={styles.sectionTitle}>ESPN Bracket</div>
+            <div className={styles.statusRow}>
+              <span className={`${styles.statusDot} ${espnBracket.data ? styles.statusActive : styles.statusInactive}`} />
+              <span className={styles.statusLabel}>Bracket Import</span>
+              <span className={styles.statusValue}>
+                {espnBracket.data
+                  ? `${espnBracket.data.entryName} - ${espnBracket.data.score.overallScore} pts`
+                  : 'Not imported'}
+              </span>
+            </div>
+            {espnBracket.data && (
+              <div className={styles.statusRow}>
+                <span className={`${styles.statusDot} ${styles.statusActive}`} />
+                <span className={styles.statusLabel}>Record</span>
+                <span className={styles.statusValue}>
+                  {espnBracket.data.score.record.wins}-{espnBracket.data.score.record.losses} · Rank #{espnBracket.data.score.rank.toLocaleString()} · Top {Math.round((1 - espnBracket.data.score.percentile) * 100)}%
+                </span>
+              </div>
+            )}
+            <div className={styles.inputGroup}>
+              <input
+                className={styles.input}
+                type="text"
+                placeholder="ESPN bracket URL or entry ID"
+                value={espnInput}
+                onChange={e => setEspnInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && espnInput.trim() && espnBracket.importBracket(espnInput)}
+              />
+              <button
+                className={styles.saveBtn}
+                onClick={() => espnBracket.importBracket(espnInput)}
+                disabled={espnBracket.loading || !espnInput.trim()}
+              >
+                {espnBracket.loading ? 'Loading...' : 'Import'}
+              </button>
+              {espnBracket.data && (
+                <button className={styles.clearBtn} onClick={() => { espnBracket.clearBracket(); setEspnInput(''); }}>Clear</button>
+              )}
+            </div>
+            {espnBracket.error && (
+              <div className={styles.hint} style={{ color: '#dc2626' }}>
+                {espnBracket.error}
+              </div>
+            )}
+            <div className={styles.hint}>
+              Paste your ESPN Tournament Challenge bracket URL to see your picks on the scoreboard. Find it at fantasy.espn.com/games/tournament-challenge-bracket-2026.
             </div>
           </div>
         </div>

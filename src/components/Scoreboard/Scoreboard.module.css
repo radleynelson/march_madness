@@ -437,6 +437,134 @@
   font-size: 14px;
 }
 
+/* ─── ESPN Bracket Summary Bar ───────────────────── */
+
+.espnSummaryBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
+  border: 1px solid #ddd6fe;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+
+.espnSummaryName {
+  font-weight: 800;
+  color: #5b21b6;
+  font-size: 13px;
+}
+
+.espnSummaryScore {
+  font-weight: 800;
+  color: #7c3aed;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.espnSummaryDetail {
+  font-weight: 600;
+  color: #7c3aed;
+  opacity: 0.7;
+  font-size: 11px;
+}
+
+/* ─── Pick Dot (on team row) ─────────────────────── */
+
+.pickDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pickDotCorrect {
+  background: #16a34a;
+}
+
+.pickDotIncorrect {
+  background: #dc2626;
+  opacity: 0.5;
+}
+
+.pickDotPending {
+  background: #f59e0b;
+}
+
+/* ─── ESPN Pick Row ──────────────────────────────── */
+
+.espnPickRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 8px;
+  font-size: 10px;
+}
+
+.espnPickPending {
+  color: #d97706;
+}
+
+.espnPickCorrect {
+  color: #16a34a;
+}
+
+.espnPickIncorrect {
+  color: #9ca3af;
+}
+
+.espnPickLabel {
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.espnPickPending .espnPickLabel {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.espnPickCorrect .espnPickLabel {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.espnPickIncorrect .espnPickLabel {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+.espnPickTeam {
+  font-weight: 700;
+}
+
+.espnPickTeamStrike {
+  font-weight: 600;
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.espnPickPoints {
+  margin-left: auto;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.espnPickCorrect .espnPickPoints {
+  color: #15803d;
+}
+
+.espnPickIncorrect .espnPickPoints {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
 /* ─── Animations ──────────────────────────────────── */
 
 @keyframes pulse {

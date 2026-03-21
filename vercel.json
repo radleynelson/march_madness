@@ -5,6 +5,7 @@
     { "source": "/api/ai/(.*)", "destination": "/api/ai/$1" },
     { "source": "/api/kalshi/(.*)", "destination": "/api/kalshi" },
     { "source": "/api/torvik/(.*)", "destination": "/api/torvik" },
+    { "source": "/api/espn-bracket/(.*)", "destination": "/api/espn-bracket" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -436,6 +436,25 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  // ---- ESPN Bracket proxy ----
+  if (req.url.startsWith('/api/espn-bracket/')) {
+    const espnPath = req.url.replace(/^\/api\/espn-bracket/, '/apis/v1/challenges/277');
+    const espnUrl = `https://gambit-api.fantasy.espn.com${espnPath}`;
+    try {
+      const espnResp = await fetch(espnUrl, { headers: { 'Accept': 'application/json' } });
+      const body = await espnResp.text();
+      res.writeHead(espnResp.status, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=30',
+      });
+      res.end(body);
+    } catch (err) {
+      console.error('ESPN bracket proxy error:', err);
+      sendJson(res, 502, { error: 'ESPN bracket proxy failed' });
+    }
+    return;
+  }
+
   // ---- Kalshi proxy ----
   if (req.url.startsWith('/api/kalshi/')) {
     const kalshiPath = req.url.replace(/^\/api\/kalshi/, '');
